@@ -1,10 +1,14 @@
 import { createApp, ref, type App as VueApp } from 'vue';
+
 import AppView from './app-view.vue';
+import { Board } from '@/modules/chess/board';
 
 // ui componnents
 import UiButton from '@/ui/button.vue';
 import UiItem from '@/ui/item.vue';
-import { Board } from '@/modules/chess/board';
+
+// views
+import BoardView from '@/modules/chess/board-view.vue';
 
 export class App {
   readonly #vueApp: VueApp;
@@ -16,7 +20,10 @@ export class App {
     this.#vueApp
       // ui
       .component('ui-button', UiButton)
-      .component('ui-item', UiItem);
+      .component('ui-item', UiItem)
+      // views
+      .component('board-view', BoardView)
+      ;
   }
 
   run() {
@@ -32,7 +39,7 @@ export class App {
   }
 
   get board() {
-    return this.#board.root;
+    return this.#board;
   }
 
   test(x: number, y: number) {

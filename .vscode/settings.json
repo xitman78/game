@@ -7,5 +7,13 @@
   },
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
-  }
+  },
+  "css.lint.validProperties": [
+    "vector-effect",
+    "d"
+  ],
+  "scss.lint.validProperties": [
+    "vector-effect",
+    "d"
+  ]
 }

@@ -50,3 +50,6 @@ body {
 .relative { position: relative; }
 .inset { inset: 0; }
 .clip { overflow: hidden; }
+.flex { display: flex; }
+.col { flex-direction: column; }
+.row { flex-direction: row; }
