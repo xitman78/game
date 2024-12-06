@@ -1,0 +1,34 @@
+@font-face {
+  font-family: Inter;
+  src: url(@/assets/font/inter.ttf);
+}
+
+@font-face {
+  font-family: Ojuju;
+  src: url(@/assets/font/ojuju.ttf);
+}
+
+:root {
+  --ff-normal: Inter;
+  --fw-normal: 400;
+  --ff-header: Ojuju;
+  --fw-header: 700;
+}
+
+.ff-normal { font-family: Inter; }
+.fw-normal { font-weight: 400; }
+
+.ff-header { font-family: Ojuju; }
+.fw-header { font-weight: 700; }
+
+@each $size in (12 16 18 24 36 48 72) {
+  .fs-#{$size} {
+    font-size: #{$size}px;
+  }
+}
+
+@each $weight in (200 300 400 500 600 700) {
+  .fw-#{$weight} {
+    font-weight: #{$weight};
+  }
+}

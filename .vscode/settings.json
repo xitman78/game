@@ -1,0 +1,11 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "tsconfig.json": "tsconfig.*.json, env.d.ts",
+    "vite.config.*": "jsconfig*, vitest.config.*",
+    "package.json": "package-lock.json, .eslint*, eslint*, .editorconfig, postcss*"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  }
+}

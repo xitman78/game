@@ -1,0 +1,46 @@
+body {
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+}
+
+code, .code {
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+h1 {
+  font-family: var(--ff-header);
+  font-weight: var(--fw-header);
+  font-size: 72px;
+}
+
+h2 {
+  font-family: var(--ff-header);
+  font-weight: var(--fw-header);
+  font-size: 48px;
+}
+
+h3 {
+  font-family: var(--ff-header);
+  font-weight: var(--fw-header);
+  font-size: 36px;
+}
+
+h4 {
+  font-family: var(--ff-normal);
+  font-weight: 600;
+  font-size: 24px;
+}
+
+h5 {
+  font-family: var(--ff-normal);
+  font-weight: 600;
+  font-size: 20px;
+}
+
+h6 {
+  font-family: var(--ff-normal);
+  font-weight: 600;
+  font-size: 16px;
+}

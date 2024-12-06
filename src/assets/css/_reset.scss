@@ -1,0 +1,52 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+button, dialog, input, option, select, textarea {
+  appearance: none;
+  background: unset;
+  border: unset;
+  color: unset;
+  font: unset;
+  height: unset;
+  outline: unset;
+  width: unset;
+}
+
+:popover-open {
+  color: unset;
+  border: unset;
+  background: unset;
+  overflow: unset;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--scroll-thumb)) rgb(var(--scroll-track));
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: rgb(var(--scroll-track));
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--scroll-thumb));
+}
+
+::-webkit-scrollbar-corner {
+  background: none;
+}
+
+:focus {
+  outline: none;
+}
+
+::-moz-focus-inner {
+  border: none;
+}

@@ -1,0 +1,52 @@
+@use 'reset';
+@use 'font';
+@use 'typography';
+@use 'colors';
+
+@mixin expand-map($map) {
+  @each $name, $value in $map {
+    --#{$name}: #{$value};
+  }
+}
+
+:root {
+  @include expand-map(colors.$theme-dark);
+}
+
+// @media (prefers-color-scheme: light) {
+//   :root {
+//     @include expand-map(colors.$theme-light);
+//   }
+// }
+
+:root {
+  --fast: 0.25s;
+  --slow: 1s;
+
+  --radius-small: 4px;
+  --radius-medium: 6px;
+  --radius-large: 8px;
+
+  --shadow-small: 0 0 5px 1px rgb(var(--shadow));
+  --shadow-medium: 0 0 10px 10px rgb(var(--shadow));
+  --shadow-large: 0 0 20px 10px rgb(var(--shadow));
+  --shadow-control-inset: 0 0 0.5em rgb(0 0 0 / 0.25) inset;
+
+  --z-app: 200;
+  --z-dlg: 100;
+}
+
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text));
+}
+
+.view {
+  position: absolute;
+  inset: 0;
+}
+
+.absolute { position: absolute; }
+.relative { position: relative; }
+.inset { inset: 0; }
+.clip { overflow: hidden; }

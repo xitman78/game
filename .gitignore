@@ -1,0 +1,9 @@
+# Local
+node_modules
+dist
+*.local
+*.tsbuildinfo
+
+# Editor directories and files
+# .vscode/*
+# !.vscode/extensions.json
