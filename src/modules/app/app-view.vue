@@ -8,14 +8,7 @@ const { model } = defineProps<{ model: App }>();
   <div class="flex col gap-1em">
     <h1>Workin</h1>
     <div class="flex row gap-1em">
-      <ui-button
-        v-for="n in [[0, 1], [1, 7], [7, 6], [6, 0]]"
-        :key="n[0]"
-        class="btn"
-        @click="model.test(n[0], n[1])"
-      >
-        test({{ n[0] }}, {{ n[1] }})
-      </ui-button>
+      <ui-button class="btn" @click="model.reset()">reset</ui-button>
     </div>
     <board-view :model="model.board" />
   </div>
@@ -32,6 +25,13 @@ const { model } = defineProps<{ model: App }>();
 
 .gap-1em {
   gap: 1em;
+}
+
+.board-input {
+  border: 1px solid rgb(var(--border));
+  border-radius: 0.25em;
+  padding-inline: 0.5em;
+  width: 3em;
 }
 
 :root {

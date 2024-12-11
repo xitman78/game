@@ -20,6 +20,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': ['error', { args: 'none' }],
       'vue/multi-word-component-names': 'off',
+      'vue/no-mutating-props': 'off',
     },
   },
 ]
