@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {type App} from './app'
+import { type App } from './app';
 
 const { model } = defineProps<{ model: App }>();
 </script>

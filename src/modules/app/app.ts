@@ -15,11 +15,6 @@ export class App {
   readonly #title = ref('app');
   readonly #board = new Board();
 
-  readonly #x0 = ref(0);
-  readonly #y0 = ref(1);
-  readonly #x1 = ref(4);
-  readonly #y1 = ref(4);
-
   constructor() {
     this.#vueApp = createApp(AppView, { model: this });
     this.#vueApp
@@ -28,7 +23,7 @@ export class App {
       .component('ui-item', UiItem)
       // views
       .component('board-view', BoardView)
-      ;
+    ;
   }
 
   run() {
@@ -45,23 +40,6 @@ export class App {
 
   get board() {
     return this.#board;
-  }
-
-  get x0() { return this.#x0.value; }
-  set x0(value) { this.#x0.value = value; }
-  get y0() { return this.#y0.value; }
-  set y0(value) { this.#y0.value = value; }
-  get x1() { return this.#x1.value; }
-  set x1(value) { this.#x1.value = value; }
-  get y1() { return this.#y1.value; }
-  set y1(value) { this.#y1.value = value; }
-
-  move() {
-    this.#board.move(this.x0, this.y0, this.x1, this.y1);
-  }
-
-  remove() {
-    this.#board.remove(this.x1, this.y1);
   }
 
   reset() {

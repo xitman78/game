@@ -6,7 +6,7 @@
     "package.json": "package-lock.json, .eslint*, eslint*, .editorconfig, postcss*"
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll.eslint": "explicit"
   },
   "css.lint.validProperties": [
     "vector-effect",
