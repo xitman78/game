@@ -52,13 +52,8 @@ const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
   justify-content: space-around;
 }
 
-$blur: 0.3px;
-.black {
-  fill: black;
-  filter: drop-shadow(0 0 $blur white);
-}
-.white {
-  fill: white;
-  filter: drop-shadow(0 0 $blur black);
-}
+.dark { fill: rgb(64 16 16); }
+.light { fill: rgb(128 128 128); }
+.black { fill: black; }
+.white { fill: white; }
 </style>

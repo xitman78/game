@@ -5,10 +5,13 @@ const { model } = defineProps<{ model: App }>();
 </script>
 
 <template>
-  <div class="flex col gap-1em">
+  <div class="flex col gap-4">
     <h1>Workin</h1>
-    <div class="flex row gap-1em">
+    <div class="flex row ai-center gap-4">
       <ui-button class="btn" @click="model.reset()">reset</ui-button>
+      <div>
+        turn: {{ model.chess.turn }}
+      </div>
     </div>
     <board-view :model="model.board" />
   </div>
@@ -21,28 +24,5 @@ const { model } = defineProps<{ model: App }>();
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.gap-1em {
-  gap: 1em;
-}
-
-.board-input {
-  border: 1px solid rgb(var(--border));
-  border-radius: 0.25em;
-  padding-inline: 0.5em;
-  width: 3em;
-}
-
-:root {
-  --dark: 64 16 16;
-  --light: 128 128 128;
-}
-
-.dark {
-  fill: rgb(var(--dark));
-}
-.light {
-  fill: rgb(var(--light));
 }
 </style>

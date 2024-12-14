@@ -53,3 +53,40 @@ body {
 .flex { display: flex; }
 .col { flex-direction: column; }
 .row { flex-direction: row; }
+
+.ai-center { align-items: center; }
+.jc-space-around { justify-content: space-around; }
+
+// margins, paddings: m-2, mx-2 etc.
+@each $suffix in (1 2 3 4) {
+  $value: $suffix * 0.25em;
+  @each $property, $prefix in ((margin m) (padding p)) {
+    .#{$prefix}-#{$suffix} {
+      #{$property}: #{$value};
+    }
+    .#{$prefix}x-#{$suffix} {
+      #{$property}-inline: $value;
+    }
+    .#{$prefix}y-#{$suffix} {
+      #{$property}-block: $value;
+    }
+    .#{$prefix}l-#{$suffix} {
+      #{$property}-inline-start: $value;
+    }
+    .#{$prefix}t-#{$suffix} {
+      #{$property}-block-start: $value;
+    }
+    .#{$prefix}r-#{$suffix} {
+      #{$property}-inline-end: $value;
+    }
+    .#{$prefix}b-#{$suffix} {
+      #{$property}-block-end: $value;
+    }
+  }
+  .gap-#{$suffix} {
+    gap: $value;
+  }
+  .r-#{$suffix} {
+    border-radius: $value;
+  }
+}

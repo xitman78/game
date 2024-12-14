@@ -9,11 +9,13 @@ import UiItem from '@/ui/item.vue';
 
 // views
 import BoardView from '@/modules/chess/board-view.vue';
+import { Chess } from '@/modules/chess/chess';
 
 export class App {
   readonly #vueApp: VueApp;
   readonly #title = ref('app');
-  readonly #board = new Board();
+  readonly chess = new Chess();
+  readonly board = new Board(this.chess);
 
   constructor() {
     this.#vueApp = createApp(AppView, { model: this });
@@ -38,11 +40,7 @@ export class App {
     this.#title.value = value;
   }
 
-  get board() {
-    return this.#board;
-  }
-
   reset() {
-    this.#board.reset();
+    this.chess.reset();
   }
 }
