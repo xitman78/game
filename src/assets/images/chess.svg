@@ -45,4 +45,5 @@
       "
     />
   </defs>
+  <g id="board" transform="translate(0 8) scale(1 -1)" />
 </svg>

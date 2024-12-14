@@ -53,7 +53,8 @@ export class Board {
     // this.root = it('svg', { viewBox: '0 0 8 8', transform: 'scale(1 -1)' });
     this.root = fromSource(scene)!;
     this.root.attributes.viewBox = '0 0 8 8';
-    this.root.attributes.transform = 'scale(1 -1)';
+    // this.root.attributes.transform = 'scale(1 -1)';
+    const b = this.root.find('board')!;
 
     for (let y = 0; y < 8; ++y) {
       const a: (Figure | undefined)[] = [];
@@ -71,7 +72,8 @@ export class Board {
       }
     }
 
-    this.root.add(boardLayer, this.figuresLayer);
+    b.add(boardLayer, this.figuresLayer);
+    this.root.add(b);
     this.root.on('pointerdown', this.#pick);
     this.root.on('pointermove', this.#drag);
     this.root.on('pointerup', this.#drop);
