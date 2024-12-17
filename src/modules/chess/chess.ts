@@ -106,13 +106,14 @@ export class Figure {
 
 export class Chess {
   readonly #setup: Setup;
-  readonly #turn: Ref<Color>;
+  readonly #turn: Ref<Color> = ref('white');
 
   readonly figures = shallowReactive<Figure[]>([]);
 
+  #enPassant: Vec | undefined;
+
   constructor(setup: Setup = defaultSetup) {
     this.#setup = setup;
-    this.#turn = ref(this.#setup.turn);
     this.reset();
   }
 
@@ -131,38 +132,21 @@ export class Chess {
     if (x === undefined || y === undefined) return false;
     if (x === figure.position.x && y === figure.position.y) return false;
 
-    // return this.allMoves(figure).some(v => v.x === x && v.y === y);
-    return this.validMoves(figure).some(v => v.x === x && v.y === y);
-  }
-
-  #step({ remove, move }: { remove?: Vec[]; move?: { from: Vec; to: Vec }[] }) {
-    if (remove) {
-      remove.forEach((v) => {
-        const index = this.figures.findIndex(f => f.position.x === v.x && f.position.y === v.y);
-        if (index !== -1) {
-          this.figures.splice(index, 1);
-        }
-      });
-    }
-    if (move) {
-      move.forEach(({ from, to }) => {
-        const index = this.figures.findIndex(f => f.position.x === from.x && f.position.y === from.y);
-        if (index !== -1) {
-          this.figures[index].position = to;
-        }
-      });
-    }
+    const { x: fx, y: fy } = figure.position;
+    return this.validMoves(figure).some(({ move }) => {
+      return move && move.some(({ from, to }) => from.x === fx && from.y === fy && to.x === x && to.y === y);
+    });
   }
 
   move(figure: Figure, x: number, y: number) {
-    if (!this.canMove(figure, x, y)) return;
-    const toRemove = this.at(x, y);
-    if (toRemove) {
-      this.remove(toRemove);
-    }
-    figure.passable = figure.type === 'pawn' && Math.abs(y - figure.position.y) === 2;
-    figure.position = new Vec(x, y);
+    const { x: fx, y: fy } = figure.position;
+    const data = this.validMoves(figure).find(({ move }) => (move && move.some(({ from, to }) => {
+      return from.x === fx && from.y === fy && to.x === x && to.y === y;
+    })));
 
+    if (!data) return;
+
+    this.#apply(data);
     this.#turn.value = this.turn !== 'white' ? 'white' : 'black';
   }
 
@@ -182,49 +166,7 @@ export class Chess {
     return undefined;
   }
 
-  validMoves(figure: Figure) {
-    const moves = this.allMoves(figure);
-    const color = figure.color;
-    const king = this.figures.find(f => f.color === color && f.type === 'king');
-    if (!king) {
-      return moves;
-    }
-
-    return moves.filter((move) => {
-      const nextColor: Color = color === 'white' ? 'black' : 'white';
-      const setup: Setup = {
-        turn: nextColor,
-        figures: [],
-      };
-      this.figures.forEach((f) => {
-        if (f !== figure && (f.position.x !== move.x || f.position.y !== move.y)) {
-          setup.figures.push({
-            color: f.color,
-            type: f.type,
-            x: f.position.x,
-            y: f.position.y,
-            moved: f.moved,
-            passable: f.passable,
-          });
-        }
-        if (f === figure) {
-          setup.figures.push({
-            color: f.color,
-            type: f.type,
-            x: move.x,
-            y: move.y,
-            moved: true,
-            passable: f.type === 'pawn' && Math.abs(move.y - f.position.y) === 2,
-          });
-        }
-      });
-      const newState = new Chess(setup);
-      const newKing = newState.figures.find(f => f.color === king.color && f.type === 'king')!;
-      return newState.#check(newKing).length === 0;
-    });
-  }
-
-  allMoves(figure: Figure): Vec[] {
+  allMoves(figure: Figure): MoveData[] {
     switch (figure.type) {
       case 'pawn':
         return this.#pawnMoves(figure);
@@ -241,14 +183,65 @@ export class Chess {
     }
   }
 
-  allMoves2(figure: Figure): MoveData[] {
-    switch (figure.type) {
-      case 'pawn': return this.#pawnMoves2(figure);
+  validMoves(figure: Figure) {
+    const moves = this.allMoves(figure);
+    const color = figure.color;
+    const king = this.figures.find(f => f.color === color && f.type === 'king');
+    if (!king) {
+      return moves;
     }
-    return [];
+
+    return moves.filter((move) => {
+      const nextColor: Color = color === 'white' ? 'black' : 'white';
+      const setup: Setup = {
+        turn: nextColor,
+        figures: [],
+      };
+      this.figures.forEach((f) => {
+        setup.figures.push({
+          color: f.color,
+          type: f.type,
+          x: f.position.x,
+          y: f.position.y,
+          moved: f.moved,
+          passable: f.passable,
+        });
+      });
+      const newState = new Chess(setup);
+      newState.#apply(move);
+      const newKing = newState.figures.find(f => f.color === king.color && f.type === 'king')!;
+      return newState.#check(newKing).length === 0;
+    });
   }
 
-  #pawnMoves2(figure: Figure): MoveData[] {
+  #apply({ remove, move }: MoveData) {
+    if (remove) {
+      remove.forEach((v) => {
+        const index = this.figures.findIndex(f => f.position.x === v.x && f.position.y === v.y);
+        if (index !== -1) {
+          this.figures.splice(index, 1);
+        }
+      });
+    }
+    if (move) {
+      move.forEach(({ from, to }) => {
+        const index = this.figures.findIndex(f => f.position.x === from.x && f.position.y === from.y);
+        if (index !== -1) {
+          const figure = this.figures[index];
+          figure.position = to;
+          figure.moved = true;
+          if (figure.type === 'pawn' && Math.abs(from.y - to.y) === 2) {
+            this.#enPassant = to;
+          }
+          else {
+            this.#enPassant = undefined;
+          }
+        }
+      });
+    }
+  }
+
+  #pawnMoves(figure: Figure): MoveData[] {
     const moves: MoveData[] = [];
     const { x, y } = figure.position;
 
@@ -281,107 +274,13 @@ export class Chess {
       }
     });
 
-    // if (figure.color === 'white') {
-    //   if (y + 1 < 8 && !this.at(x, y + 1)) {
-    //     moves.push(new Vec(x, y + 1));
-    //     if (y === 1 && !this.at(x, y + 2)) {
-    //       moves.push(new Vec(x, y + 2));
-    //     }
-    //   }
-    //   if (x - 1 >= 0 && y + 1 < 8) {
-    //     const other = this.at(x - 1, y + 1);
-    //     if (other && other.color !== figure.color) {
-    //       moves.push(new Vec(x - 1, y + 1));
-    //     }
-    //   }
-    //   if (x + 1 < 8 && y + 1 < 8) {
-    //     const other = this.at(x + 1, y + 1);
-    //     if (other && other.color !== figure.color) {
-    //       moves.push(new Vec(x + 1, y + 1));
-    //     }
-    //   }
-    // }
-    // else {
-    //   if (y - 1 >= 0 && !this.at(x, y - 1)) {
-    //     moves.push(new Vec(x, y - 1));
-    //     if (y === 6 && !this.at(x, y - 2)) {
-    //       moves.push(new Vec(x, y - 2));
-    //     }
-    //   }
-    //   if (x - 1 >= 0 && y - 1 >= 0) {
-    //     const other = this.at(x - 1, y - 1);
-    //     if (other && other.color !== figure.color) {
-    //       moves.push(new Vec(x - 1, y - 1));
-    //     }
-    //   }
-    //   if (x + 1 < 8 && y - 1 >= 0) {
-    //     const other = this.at(x + 1, y - 1);
-    //     if (other && other.color !== figure.color) {
-    //       moves.push(new Vec(x + 1, y - 1));
-    //     }
-    //   }
-    // }
-
-    return moves;
-  }
-
-  #check(king: Figure) {
-    const { x, y } = king.position;
-    const figures: Figure[] = [];
-    for (let i = 0; i < this.figures.length; ++i) {
-      const figure = this.figures[i];
-      if (figure.color !== king.color) {
-        const moves = this.allMoves(figure);
-        if (moves.some(v => v.x === x && v.y === y)) {
-          figures.push(figure);
-        }
-      }
-    }
-    return figures;
-  }
-
-  #pawnMoves(figure: Figure) {
-    const moves: Vec[] = [];
-    const { x, y } = figure.position;
-
-    if (figure.color === 'white') {
-      if (y + 1 < 8 && !this.at(x, y + 1)) {
-        moves.push(new Vec(x, y + 1));
-        if (y === 1 && !this.at(x, y + 2)) {
-          moves.push(new Vec(x, y + 2));
-        }
-      }
-      if (x - 1 >= 0 && y + 1 < 8) {
-        const other = this.at(x - 1, y + 1);
-        if (other && other.color !== figure.color) {
-          moves.push(new Vec(x - 1, y + 1));
-        }
-      }
-      if (x + 1 < 8 && y + 1 < 8) {
-        const other = this.at(x + 1, y + 1);
-        if (other && other.color !== figure.color) {
-          moves.push(new Vec(x + 1, y + 1));
-        }
-      }
-    }
-    else {
-      if (y - 1 >= 0 && !this.at(x, y - 1)) {
-        moves.push(new Vec(x, y - 1));
-        if (y === 6 && !this.at(x, y - 2)) {
-          moves.push(new Vec(x, y - 2));
-        }
-      }
-      if (x - 1 >= 0 && y - 1 >= 0) {
-        const other = this.at(x - 1, y - 1);
-        if (other && other.color !== figure.color) {
-          moves.push(new Vec(x - 1, y - 1));
-        }
-      }
-      if (x + 1 < 8 && y - 1 >= 0) {
-        const other = this.at(x + 1, y - 1);
-        if (other && other.color !== figure.color) {
-          moves.push(new Vec(x + 1, y - 1));
-        }
+    if (this.#enPassant) {
+      const p = this.#enPassant;
+      if (p.y === y && Math.abs(p.x - x) === 1 && !this.at(p.x, p.y + dy)) {
+        moves.push({
+          remove: [p],
+          move: [{ from: figure.position, to: new Vec(p.x, p.y + dy) }],
+        });
       }
     }
 
@@ -394,11 +293,11 @@ export class Chess {
 
   #knightMoves(figure: Figure) {
     const { x, y } = figure.position;
-    const moves: Vec[] = [];
+    const moves: MoveData[] = [];
 
     [-1, 1, -2, 2].forEach((dx) => {
       [Math.abs(dx) - 3, 3 - Math.abs(dx)].forEach((dy) => {
-        this.#checkAndAdd(figure, x + dx, y + dy, moves);
+        this.#addMove(figure, x + dx, y + dy, moves);
       });
     });
 
@@ -415,19 +314,53 @@ export class Chess {
 
   #kingMoves(figure: Figure) {
     const { x, y } = figure.position;
-    const moves: Vec[] = [];
+    const moves: MoveData[] = [];
 
     for (let dx = -1; dx < 2; ++dx) {
       for (let dy = -1; dy < 2; ++dy) {
-        this.#checkAndAdd(figure, x + dx, y + dy, moves);
+        if (dx !== 0 || dy !== 0) {
+          this.#addMove(figure, x + dx, y + dy, moves);
+        }
+      }
+    }
+
+    if (!figure.moved) {
+      // king castle
+      const rook7 = this.at(7, y);
+      if (rook7 && !rook7.moved && !this.at(5, y) && !this.at(6, y)) {
+        moves.push({
+          move: [{ from: figure.position, to: new Vec(6, y) }, { from: rook7.position, to: new Vec(5, y) }],
+        });
+      }
+      // queen castle
+      const rook0 = this.at(0, y);
+      if (rook0 && !rook0.moved && !this.at(1, y) && !this.at(2, y) && !this.at(3, y)) {
+        moves.push({
+          move: [{ from: figure.position, to: new Vec(2, y) }, { from: rook0.position, to: new Vec(3, y) }],
+        });
       }
     }
 
     return moves;
   }
 
+  #check(king: Figure) {
+    const { x, y } = king.position;
+    const figures: Figure[] = [];
+    for (let i = 0; i < this.figures.length; ++i) {
+      const figure = this.figures[i];
+      if (figure.color !== king.color) {
+        const moves = this.allMoves(figure);
+        if (moves.some(m => m.remove?.some(v => v.x === x && v.y === y))) {
+          figures.push(figure);
+        }
+      }
+    }
+    return figures;
+  }
+
   #trace(figure: Figure, directions: [number, number][]) {
-    const moves: Vec[] = [];
+    const moves: MoveData[] = [];
     const { x, y } = figure.position;
 
     directions.forEach(([dx, dy]) => {
@@ -440,12 +373,15 @@ export class Chess {
         const other = this.at(x1, y1);
         if (other) {
           if (other.color !== figure.color) {
-            moves.push(new Vec(x1, y1));
+            moves.push({
+              remove: [new Vec(x1, y1)],
+              move: [{ from: figure.position, to: new Vec(x1, y1) }],
+            });
           }
           break;
         }
         else {
-          moves.push(new Vec(x1, y1));
+          moves.push({ move: [{ from: figure.position, to: new Vec(x1, y1) }] });
         }
       }
     });
@@ -453,11 +389,15 @@ export class Chess {
     return moves;
   }
 
-  #checkAndAdd(figure: Figure, x: number, y: number, moves: Vec[]) {
+  #addMove(figure: Figure, x: number, y: number, moves: MoveData[]) {
     if (x >= 0 && x < 8 && y >= 0 && y < 8) {
       const other = this.at(x, y);
-      if (!other || other.color !== figure.color) {
-        moves.push(new Vec(x, y));
+      const move: { from: Vec; to: Vec }[] = [{ from: figure.position, to: new Vec(x, y) }];
+      if (other && other.color !== figure.color) {
+        moves.push({ remove: [new Vec(x, y)], move });
+      }
+      else if (!other) {
+        moves.push({ move });
       }
     }
   }

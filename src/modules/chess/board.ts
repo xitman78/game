@@ -116,8 +116,22 @@ export class Board {
     const figure = this.chess.at(x, y);
     if (!figure || !this.chess.canMove(figure)) return;
 
-    const all = this.chess.allMoves(figure).map(v => `${pos(v)}`).join(' ');
-    const valid = this.chess.validMoves(figure).map(v => `${pos(v)}`).join(' ');
+    const all = this.chess.allMoves(figure).map((data) => {
+      if (data.move) {
+        return data.move.filter(({ from }) => from.x === x && from.y === y).map(({ to }) => `${pos(to)}`).join(' ');
+      }
+      else {
+        return '';
+      }
+    }).join(' ');
+    const valid = this.chess.validMoves(figure).map((data) => {
+      if (data.move) {
+        return data.move.filter(({ from }) => from.x === x && from.y === y).map(({ to }) => `${pos(to)}`).join(' ');
+      }
+      else {
+        return '';
+      }
+    }).join(' ');
     console.log(`${figure.color} ${figure.type} ${pos(figure.position)}\n\tmoves: ${all}\n\tvalid: ${valid}`);
 
     this.#offset.x = x - ex;
