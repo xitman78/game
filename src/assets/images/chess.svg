@@ -1,5 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <filter id="black-shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="0.2" flood-color="white" />
+    </filter>
+    <filter id="white-shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="0.2" flood-color="black" />
+    </filter>
     <path
       id="pawn"
       d="

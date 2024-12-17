@@ -3,8 +3,8 @@ import { Vec } from '@/lib/bi';
 import { Item, fromSource, it } from '@/lib/reactive';
 import { clamp, Disposable } from '@/lib/std';
 import { Transformable } from '@/lib/svg/transformable';
+import { Chess, Figure, pos } from '@/modules/chess/chess';
 
-import { Chess, Figure } from '@/modules/chess/chess';
 import scene from '@/assets/images/chess.svg?raw';
 
 export class Shape extends Transformable {
@@ -15,11 +15,12 @@ export class Shape extends Transformable {
     const cssColor = figure.color;
     const cssType = figure.type;
     const shapeId = figure.type;
-    const shadowColor = figure.color === 'white' ? 'black' : 'white';
-    const blur = 0.3;
+    // const shadowColor = figure.color === 'white' ? 'black' : 'white';
+    // const blur = 0.3;
     super('g', {
       class: `${cssColor} ${cssType}`,
-      filter: `drop-shadow(0 0 ${blur}px ${shadowColor})`,
+      // filter: `drop-shadow(0 0 ${blur}px ${shadowColor})`,
+      filter: `url(#${cssColor}-shadow)`,
     });
     this.scale = new Vec(scale, scale);
     const use = it('use', { href: `#${shapeId}` });
@@ -100,7 +101,7 @@ export class Board {
   #offset = new Vec();
   #selectedFigure: Figure | undefined;
 
-  #pos(e: PointerEvent) {
+  #pos(e: MouseEvent) {
     const rect = this.root.element!.getBoundingClientRect();
     const w = rect.width / 8;
     const x = (e.clientX - rect.left) / w;
@@ -109,14 +110,18 @@ export class Board {
   }
 
   #pick = (e: PointerEvent) => {
-    const { x, y } = this.#pos(e);
-    const fx = Math.floor(x);
-    const fy = Math.floor(y);
-    const figure = this.chess.at(fx, fy);
+    const { x: ex, y: ey } = this.#pos(e);
+    const x = Math.floor(ex);
+    const y = Math.floor(ey);
+    const figure = this.chess.at(x, y);
     if (!figure || !this.chess.canMove(figure)) return;
 
-    this.#offset.x = fx - x;
-    this.#offset.y = fy - y;
+    const all = this.chess.allMoves(figure).map(v => `${pos(v)}`).join(' ');
+    const valid = this.chess.validMoves(figure).map(v => `${pos(v)}`).join(' ');
+    console.log(`${figure.color} ${figure.type} ${pos(figure.position)}\n\tmoves: ${all}\n\tvalid: ${valid}`);
+
+    this.#offset.x = x - ex;
+    this.#offset.y = y - ey;
 
     this.#selectedFigure = figure;
     const shape = this.shapes.get(figure)!;

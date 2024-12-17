@@ -14,7 +14,22 @@ import { Chess } from '@/modules/chess/chess';
 export class App {
   readonly #vueApp: VueApp;
   readonly #title = ref('app');
-  readonly chess = new Chess();
+  readonly chess = new Chess(
+    {
+      turn: 'white',
+      figures: [
+        { color: 'white', type: 'pawn', x: 2, y: 1 },
+        { color: 'white', type: 'rook', x: 0, y: 0 },
+        { color: 'white', type: 'rook', x: 3, y: 2 },
+        { color: 'white', type: 'knight', x: 1, y: 0 },
+        { color: 'white', type: 'bishop', x: 2, y: 0 },
+        { color: 'white', type: 'bishop', x: 5, y: 0 },
+        { color: 'white', type: 'king', x: 4, y: 0 },
+        { color: 'black', type: 'bishop', x: 0, y: 4 },
+      ],
+    },
+  );
+
   readonly board = new Board(this.chess);
 
   constructor() {
