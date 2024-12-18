@@ -1,25 +1,32 @@
-import { createApp, ref, type App as VueApp } from 'vue';
-
-import AppView from './app-view.vue';
-import { Board } from '@/modules/chess/board';
+import { createApp, type App as VueApp } from 'vue';
 
 // ui componnents
 import UiButton from '@/ui/button.vue';
+import UiDialog from '@/ui/dialog.vue';
+import UiIcon from '@/ui/icon.vue';
 import UiItem from '@/ui/item.vue';
 
 // views
 import BoardView from '@/modules/chess/board-view.vue';
-import { Chess } from '@/modules/chess/chess';
+import FigureSelector from '@/modules/chess/figure-selector.vue';
+import AppView from './app-view.vue';
+
+import { Board } from '@/modules/chess/board';
+import { Chess, type Type } from '@/modules/chess/chess';
+import { Dialog } from '@/ui/lib/dialog';
+import { ExplicitPromise } from '@/lib/async';
 
 export class App {
   readonly #vueApp: VueApp;
-  readonly #title = ref('app');
+  readonly dialog = new Dialog({ draggable: false, resizable: false });
+
   readonly chess = new Chess(
     {
       turn: 'white',
       figures: [
         { color: 'white', type: 'pawn', x: 2, y: 1 },
         { color: 'white', type: 'pawn', x: 6, y: 4 },
+        { color: 'white', type: 'pawn', x: 7, y: 6 },
         { color: 'white', type: 'rook', x: 0, y: 0 },
         { color: 'white', type: 'queen', x: 3, y: 2 },
         { color: 'white', type: 'knight', x: 1, y: 0 },
@@ -42,22 +49,25 @@ export class App {
     this.#vueApp
       // ui
       .component('ui-button', UiButton)
+      .component('ui-dialog', UiDialog)
+      .component('ui-icon', UiIcon)
       .component('ui-item', UiItem)
       // views
       .component('board-view', BoardView)
+      .component('figure-selector', FigureSelector)
     ;
+
+    this.board.figureSelector.interaction = () => new ExplicitPromise<Type>(
+      () => { this.dialog.showModal(); },
+      (resolve, type) => {
+        this.dialog.closeAsync('transform');
+        resolve(type);
+      },
+    );
   }
 
   run() {
     this.#vueApp.mount('#app');
-  }
-
-  get title() {
-    return this.#title.value;
-  }
-
-  set title(value) {
-    this.#title.value = value;
   }
 
   reset() {

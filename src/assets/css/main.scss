@@ -2,6 +2,8 @@
 @use 'font';
 @use 'typography';
 @use 'colors';
+@use 'icons';
+@use 'cursors';
 
 @mixin expand-map($map) {
   @each $name, $value in $map {
@@ -41,6 +43,10 @@ body {
   color: rgb(var(--text));
 }
 
+dialog {
+  color: rgb(var(--text));
+}
+
 .view {
   position: absolute;
   inset: 0;
@@ -54,8 +60,14 @@ body {
 .col { flex-direction: column; }
 .row { flex-direction: row; }
 
+.spacer { flex-grow: 1; }
+.spacer.collapsed { flex-grow: 0; }
 .ai-center { align-items: center; }
+.jc-center { justify-content: center; }
 .jc-space-around { justify-content: space-around; }
+
+.mouse { pointer-events: all; }
+.no-mouse { pointer-events: none; }
 
 // margins, paddings: m-2, mx-2 etc.
 @each $suffix in (1 2 3 4) {

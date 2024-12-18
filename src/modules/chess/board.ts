@@ -6,29 +6,35 @@ import { Transformable } from '@/lib/svg/transformable';
 import { Chess, Figure, pos } from '@/modules/chess/chess';
 
 import scene from '@/assets/images/chess.svg?raw';
+import { FigureSelector } from '@/modules/chess/figure-selector';
 
 export class Shape extends Transformable {
   readonly #disposer = new Disposable();
 
   constructor(figure: Figure) {
+    super('g');
+
     const scale = 1 / 8; // all shape images have size 8x8
-    const cssColor = figure.color;
-    const cssType = figure.type;
-    const shapeId = figure.type;
-    // const shadowColor = figure.color === 'white' ? 'black' : 'white';
-    // const blur = 0.3;
-    super('g', {
-      class: `${cssColor} ${cssType}`,
-      // filter: `drop-shadow(0 0 ${blur}px ${shadowColor})`,
-      filter: `url(#${cssColor}-shadow)`,
-    });
     this.scale = new Vec(scale, scale);
-    const use = it('use', { href: `#${shapeId}` });
+    const use = it('use');
     this.add(use);
+
     this.#disposer.add(
       watch(
         () => ({ x: figure.position.x, y: figure.position.y }),
         () => this.position = figure.position,
+        { immediate: true },
+      ),
+      watch(
+        () => ({ color: figure.color, type: figure.type }),
+        () => {
+          const cssColor = figure.color;
+          const cssType = figure.type;
+          const shapeId = figure.type;
+          this.attributes.class = `${cssColor} ${cssType}`;
+          this.attributes.filter = `url(#${cssColor}-shadow)`;
+          use.attributes.href = `#${shapeId}`;
+        },
         { immediate: true },
       ),
     );
@@ -46,6 +52,8 @@ export class Board {
 
   readonly chess: Chess;
   readonly shapes = new Map<Figure, Shape>();
+
+  readonly figureSelector = new FigureSelector();
 
   constructor(chess: Chess) {
     this.chess = chess;
@@ -98,6 +106,24 @@ export class Board {
     this.shapes.forEach(shape => shape.dispose());
   }
 
+  #checkLost() {
+    const color = this.chess.turn;
+    const figures = this.chess.figures;
+
+    let lost = true;
+    for (let i = 0; i < figures.length; ++i) {
+      const figure = figures[i];
+      if (figure.color === color && this.chess.validMoves(figure).length > 0) {
+        lost = false;
+        break;
+      }
+    }
+
+    if (lost) {
+      console.log(`${color} lost!`);
+    }
+  }
+
   #offset = new Vec();
   #selectedFigure: Figure | undefined;
 
@@ -116,7 +142,7 @@ export class Board {
     const figure = this.chess.at(x, y);
     if (!figure || !this.chess.canMove(figure)) return;
 
-    const all = this.chess.allMoves(figure).map((data) => {
+    const all = this.chess.allMoves(figure, false).map((data) => {
       if (data.move) {
         return data.move.filter(({ from }) => from.x === x && from.y === y).map(({ to }) => `${pos(to)}`).join(' ');
       }
@@ -150,18 +176,27 @@ export class Board {
     shape.position = new Vec(x + this.#offset.x, y + this.#offset.y);
   };
 
-  #drop = (e: PointerEvent) => {
+  #drop = async (e: PointerEvent) => {
     if (!this.#selectedFigure) return;
+
+    const figure = this.#selectedFigure;
+    this.#selectedFigure = undefined;
+    this.root.element!.releasePointerCapture(e.pointerId);
+
     const { x, y } = this.#pos(e);
     const fx = clamp(Math.floor(x + 0.5 + this.#offset.x), 0, 7);
     const fy = clamp(Math.floor(y + 0.5 + this.#offset.y), 0, 7);
-    if (this.chess.canMove(this.#selectedFigure, fx, fy)) {
-      this.chess.move(this.#selectedFigure, fx, fy);
+
+    if (this.chess.canMove(figure, fx, fy)) {
+      this.chess.move(figure, fx, fy);
+      if (figure.type === 'pawn' && (fy === 0 || fy === 7)) {
+        const type = await this.figureSelector.pick(figure.color);
+        figure.type = type;
+      }
+      this.#checkLost();
     }
     else {
-      this.shapes.get(this.#selectedFigure)!.position = this.#selectedFigure.position;
+      this.shapes.get(figure)!.position = figure.position;
     }
-    this.#selectedFigure = undefined;
-    this.root.element!.releasePointerCapture(e.pointerId);
   };
 }

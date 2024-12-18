@@ -1,0 +1,13 @@
+// icons
+@each $name in ('check', 'close', 'down', 'gt', 'lt', 'up') {
+  .icon.#{$name} {
+    mask-image: url(@/assets/icons/#{$name}.svg);
+  }
+}
+
+// rotations: r90 ... r-270
+@each $angle in ('90', '180', '270', '-90', '-180', '-270') {
+  .r#{$angle} {
+    transform: rotate(#{$angle}deg);
+  }
+}

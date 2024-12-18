@@ -68,14 +68,14 @@ export const defaultSetup: Setup = {
 };
 
 export class Figure {
-  #color: Color;
+  #color: Ref<Color> = ref('white');
   #type: Ref<Type>;
   #position: Ref<Vec>;
   moved = false;
   passable = false;
 
   constructor(data: FigureData) {
-    this.#color = data.color;
+    this.color = data.color;
     this.#type = ref(data.type);
     this.#position = ref(new Vec(data.x, data.y));
     this.moved = data.moved || false;
@@ -83,7 +83,11 @@ export class Figure {
   }
 
   get color() {
-    return this.#color;
+    return this.#color.value;
+  }
+
+  set color(value) {
+    this.#color.value = value;
   }
 
   get type() {
@@ -127,7 +131,7 @@ export class Chess {
   }
 
   canMove(figure: Figure, x?: number, y?: number) {
-    // if (figure.color !== this.turn) return false;
+    if (figure.color !== this.turn) return false;
     if (x === undefined && y === undefined) return true;
     if (x === undefined || y === undefined) return false;
     if (x === figure.position.x && y === figure.position.y) return false;
@@ -166,7 +170,7 @@ export class Chess {
     return undefined;
   }
 
-  allMoves(figure: Figure): MoveData[] {
+  allMoves(figure: Figure, check: boolean): MoveData[] {
     switch (figure.type) {
       case 'pawn':
         return this.#pawnMoves(figure);
@@ -179,12 +183,12 @@ export class Chess {
       case 'queen':
         return this.#queenMoves(figure);
       case 'king':
-        return this.#kingMoves(figure);
+        return this.#kingMoves(figure, check);
     }
   }
 
   validMoves(figure: Figure) {
-    const moves = this.allMoves(figure);
+    const moves = this.allMoves(figure, true);
     const color = figure.color;
     const king = this.figures.find(f => f.color === color && f.type === 'king');
     if (!king) {
@@ -312,7 +316,7 @@ export class Chess {
     return this.#trace(figure, [[-1, 0], [1, 0], [0, 1], [0, -1], [-1, -1], [-1, 1], [1, -1], [1, 1]]);
   }
 
-  #kingMoves(figure: Figure) {
+  #kingMoves(figure: Figure, check: boolean) {
     const { x, y } = figure.position;
     const moves: MoveData[] = [];
 
@@ -322,6 +326,10 @@ export class Chess {
           this.#addMove(figure, x + dx, y + dy, moves);
         }
       }
+    }
+
+    if (check && this.#check(figure).length > 0) {
+      return moves;
     }
 
     if (!figure.moved) {
@@ -347,15 +355,14 @@ export class Chess {
   #check(king: Figure) {
     const { x, y } = king.position;
     const figures: Figure[] = [];
-    for (let i = 0; i < this.figures.length; ++i) {
-      const figure = this.figures[i];
+    this.figures.forEach((figure) => {
       if (figure.color !== king.color) {
-        const moves = this.allMoves(figure);
+        const moves = this.allMoves(figure, false);
         if (moves.some(m => m.remove?.some(v => v.x === x && v.y === y))) {
           figures.push(figure);
         }
       }
-    }
+    });
     return figures;
   }
 
