@@ -1,8 +1,7 @@
 import { ref, shallowReactive, type Ref } from 'vue';
 import { Vec } from '@/lib/bi';
-import type { Color, MoveData, PickType, Setup, Type } from '@/modules/chess/types';
+import type { Color, MoveData, Setup, Type } from '@/modules/chess/types';
 import { Figure } from '@/modules/chess/figure';
-import { ExplicitPromise } from '@/lib/async';
 
 export function pos(v: Vec) {
   const letters = 'abcdefgh';
@@ -51,9 +50,10 @@ export class Chess {
   readonly #setup: Setup;
   readonly #turn: Ref<Color> = ref('white');
 
-  readonly #pick: PickType = () => (new ExplicitPromise<Type>(resolve => resolve('queen')));
+  pick = (color: Color) => new Promise<Type>(resolve => resolve('queen'));
+  win = (color: Color) => new Promise<void>(resolve => resolve());
+
   readonly figures = shallowReactive<Figure[]>([]);
-  pick = this.#pick;
 
   #enPassant: Vec | undefined;
 
@@ -91,15 +91,23 @@ export class Chess {
 
     if (!data) return;
 
-    await this.#apply(data, true);
+    await this.#apply(data);
+    if (this.#checkWin(this.turn)) {
+      await this.win(this.turn);
+    }
+
     this.#turn.value = this.turn !== 'white' ? 'white' : 'black';
   }
 
-  remove(figure: Figure) {
-    const index = this.figures.findIndex(f => f === figure);
-    if (index !== -1) {
-      this.figures.splice(index, 1);
+  #checkWin(color: Color) {
+    let win = true;
+    for (const f of this.figures) {
+      if (f.color !== color && this.validMoves(f).length > 0) {
+        win = false;
+        break;
+      }
     }
+    return win;
   }
 
   at(x: number, y: number) {
@@ -113,18 +121,12 @@ export class Chess {
 
   allMoves(figure: Figure, check: boolean): MoveData[] {
     switch (figure.type) {
-      case 'pawn':
-        return this.#pawnMoves(figure);
-      case 'rook':
-        return this.#rookMoves(figure);
-      case 'knight':
-        return this.#knightMoves(figure);
-      case 'bishop':
-        return this.#bishopMoves(figure);
-      case 'queen':
-        return this.#queenMoves(figure);
-      case 'king':
-        return this.#kingMoves(figure, check);
+      case 'pawn': return this.#pawnMoves(figure);
+      case 'rook': return this.#rookMoves(figure);
+      case 'knight': return this.#knightMoves(figure);
+      case 'bishop': return this.#bishopMoves(figure);
+      case 'queen': return this.#queenMoves(figure);
+      case 'king': return this.#kingMoves(figure, check);
     }
   }
 
@@ -159,7 +161,7 @@ export class Chess {
     });
   }
 
-  async #apply({ remove, move }: MoveData, pick: boolean) {
+  async #apply({ remove, move }: MoveData) {
     if (remove) {
       remove.forEach((v) => {
         const index = this.figures.findIndex(f => f.position.x === v.x && f.position.y === v.y);
@@ -182,7 +184,7 @@ export class Chess {
           if (Math.abs(from.y - to.y) === 2) {
             this.#enPassant = to;
           }
-          if (pick && (to.y === 0 || to.y === 7)) {
+          if (to.y === 0 || to.y === 7) {
             const type = await this.pick(this.turn);
             figure.type = type;
           }

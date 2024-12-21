@@ -3,11 +3,12 @@ import { type App } from './app';
 
 const { model } = defineProps<{ model: App }>();
 
-function keydown(e: KeyboardEvent) {
+function escape(e: KeyboardEvent) {
   if (e.code === 'Escape') {
-    model.figureSelector.select('queen');
+    model.ok();
   }
 }
+
 const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 </script>
@@ -15,35 +16,26 @@ const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 <template>
   <div class="flex col gap-4">
     <teleport to="body">
-      <ui-dialog :model="model.dialog" class="figure-selector-dialog" @keydown="keydown">
+      <ui-dialog :model="model.dialog" class="figure-selector-dialog" @keydown="escape">
         <div class="dlg-panel">
-          <div class="flex ai-center px-2">
-            <h3>dialog</h3>
-            <div class="spacer" />
-          </div>
-          <div class="dlg-content">
-            <figure-selector :model="model.figureSelector" />
-          </div>
+          <h2>{{ model.chess.turn }} win!</h2>
+          <ui-button class="btn" @click="model.ok()">ok</ui-button>
         </div>
       </ui-dialog>
     </teleport>
-    <!-- <h1>Workin</h1> -->
+    <div class="header">
+      <h2>{{ model.chess.turn }} turn</h2>
+      <ui-button class="btn" @click="model.reset()">reset</ui-button>
+    </div>
     <div class="grid">
-      <div class="board-header flex row ai-center gap-4">
-        <ui-button class="btn" @click="model.reset()">reset</ui-button>
-        <div>
-          turn: {{ model.chess.turn }}
-        </div>
-      </div>
-      <figure-selector class="selector-item" :model="model.figureSelector" />
-      <div class="board-border"></div>
+      <picker-view class="pick-white" :model="model.picker" :color="'white'" />
       <div class="board-side top row">
         <span v-for="i in letters" :key="i">{{ i }}</span>
       </div>
       <div class="board-side left col">
         <span v-for="i in numbers" :key="i">{{ i }}</span>
       </div>
-      <div class="board-item">
+      <div class="board-chess">
         <board-view :model="model.board" />
       </div>
       <div class="board-side right col">
@@ -52,7 +44,9 @@ const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
       <div class="board-side bottom row">
         <span v-for="i in letters" :key="i">{{ i }}</span>
       </div>
-      <!-- <div class="grid-item" v-for="i in 9" :key="i"></div> -->
+      <div class="board-border"></div>
+      <picker-view class="pick-black" :model="model.picker" :color="'black'" />
+      <!-- <div class="grid-item" v-for="i in 20" :key="i"></div> -->
     </div>
   </div>
 </template>
@@ -66,71 +60,79 @@ const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
   justify-content: center;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-inline: min(7vw, 7vh);
+  border-bottom: 2px solid rgb(var(--border));
+}
+
 .grid {
-  --base: min(10vw, 7vh);
-  width: calc(var(--base) * 9);
-  height: calc(var(--base) * 13);
+  --base: min(7vw, 7vh);
+  width: calc(var(--base) * 11);
+  height: calc(var(--base) * 11);
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 4fr 8fr 4fr 1fr;
-  grid-template-rows: 2fr 2fr 1fr 16fr 1fr 4fr;
+  grid-template-columns: 2fr 1fr 4fr 8fr 4fr 1fr 2fr;
+  grid-template-rows: 2fr 1fr 8fr 8fr 1fr 2fr;
 }
 
 .grid-item {
   border: 1px solid darkred;
 }
 
-.board-header {
-  grid-column-start: 1;
-  grid-column-end: -1;
-  grid-row-start: 1;
-}
-
 .board-border {
+  grid-column-start: 2;
+  grid-column-end: -2;
+  grid-row-start: 2;
+  grid-row-end: -2;
   border: 2px solid rgb(var(--border));
-  grid-column-start: 1;
-  grid-column-end: -1;
-  grid-row-start: 3;
-  grid-row-end: 6;
 }
 
 .board-side {
-  // background-color: black;
+  background-color: rgb(var(--surface));
   &.left {
-    grid-row-start: 4;
-    grid-column-start: 1;
+    grid-column-start: 2;
   }
   &.right {
-    grid-row-start: 4;
-    grid-column-start: 5;
+    grid-column-start: 6;
+  }
+  &.left, &.right {
+    grid-row-start: 3;
+    grid-row-end: 5;
   }
   &.top {
-    grid-column-start: 1;
-    grid-column-end: -1;
-    grid-row-start: 3;
+    grid-row-start: 2;
   }
   &.bottom {
-    grid-column-start: 1;
-    grid-column-end: -1;
     grid-row-start: 5;
   }
   &.top, &.bottom {
+    grid-column-start: 2;
+    grid-column-end: -2;
     padding-inline: calc(var(--base) / 2);
   }
 }
 
-.board-item {
+.board-chess {
   position: relative;
-  grid-column-start: 2;
-  grid-column-end: -2;
-  grid-row-start: 4;
+  grid-column-start: 3;
+  grid-column-end: -3;
+  grid-row-start: 3;
   grid-row-end: 5;
 }
 
-.selector-item {
+.pick-white {
   position: relative;
-  grid-column-start: 3;
-  grid-row-start: 2;
+  grid-column-start: 4;
+  grid-row-start: 1;
+}
+
+.pick-black {
+  position: relative;
+  grid-column-start: 4;
+  grid-row-start: 6;
 }
 
 $width: 400px;
@@ -147,7 +149,9 @@ dialog.figure-selector-dialog {
   height: 100%;
   display: flex;
   flex-direction: column;
-  pointer-events: none;
+  gap: 1em;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-large);
   border: 1px solid rgb(var(--border));
   background-color: rgb(var(--surface));

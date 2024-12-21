@@ -9,6 +9,7 @@ export class Picker {
   readonly #pickType: () => ExplicitPromise<Type>;
   #promise: ExplicitPromise<Type> | undefined;
   readonly #show = ref(false);
+  readonly #color = ref(<Color>'black');
 
   readonly figures: Figure[] = (<Type[]>['rook', 'knight', 'bishop', 'queen'])
     .map(type => new Figure({ color: 'black', type, x: 0, y: 0 }));
@@ -26,15 +27,20 @@ export class Picker {
   }
 
   pick = async (color: Color) => {
+    this.#color.value = color;
     this.figures.forEach(f => f.color = color);
     this.show = true;
     this.#promise = this.#pickType();
-    return await this.#promise;
+    return this.#promise;
   };
 
   select(type: Type) {
     this.show = false;
     this.#promise?.resolve(type);
+  }
+
+  get color() {
+    return this.#color.value;
   }
 
   get show() {

@@ -67,24 +67,6 @@ export class Board {
     this.shapes.forEach(shape => shape.dispose());
   }
 
-  #checkLost() {
-    const color = this.chess.turn;
-    const figures = this.chess.figures;
-
-    let lost = true;
-    for (let i = 0; i < figures.length; ++i) {
-      const figure = figures[i];
-      if (figure.color === color && this.chess.validMoves(figure).length > 0) {
-        lost = false;
-        break;
-      }
-    }
-
-    if (lost) {
-      console.log(`${color} lost!`);
-    }
-  }
-
   #offset = new Vec();
   #selectedFigure: Figure | undefined;
 
@@ -149,7 +131,6 @@ export class Board {
     const fy = clamp(Math.floor(y + 0.5 + this.#offset.y), 0, 7);
 
     await this.chess.move(figure, fx, fy);
-    this.#checkLost();
     this.shapes.get(figure)!.position = figure.position;
   };
 }
