@@ -1,55 +1,35 @@
-import { ref, type Ref } from 'vue';
-import { it, Item } from '@/lib/reactive';
-import { Shape } from '@/modules/chess/board';
-import { Figure, type Color, type Type } from '@/modules/chess/chess';
+import { it } from '@/lib/reactive';
+import { Shape } from '@/modules/chess/shape';
 import { ExplicitPromise } from '@/lib/async';
+import { Figure } from '@/modules/chess/figure';
+import type { Color, Type } from '@/modules/chess/types';
 
 export class FigureSelector {
-  readonly #color: Ref<Color> = ref('black');
-
-  readonly images: Item[] = [
-    it('svg', { viewBox: '0 0 1 1' }),
-    it('svg', { viewBox: '0 0 1 1' }),
-    it('svg', { viewBox: '0 0 1 1' }),
-    it('svg', { viewBox: '0 0 1 1' }),
-  ];
+  readonly #selectType: () => ExplicitPromise<Type>;
+  #selector: ExplicitPromise<Type> | undefined;
 
   readonly figures: Figure[] = (<Type[]>['rook', 'knight', 'bishop', 'queen'])
     .map(type => new Figure({ color: 'black', type, x: 0, y: 0 }));
 
   readonly shapes: Shape[] = this.figures.map(f => new Shape(f));
 
-  constructor() {
-    this.images.forEach((image, index) => {
-      const g = it('g', { transform: 'translate(0 1) scale(1 -1)' });
-      g.add(this.shapes[index]);
-      image.add(g);
-    });
+  readonly images = this.shapes.map(shape =>
+    it('svg', { viewBox: '0 0 1 1' }, [
+      it('g', { transform: 'translate(0 1) scale(1 -1)' }, [shape]),
+    ]),
+  );
+
+  constructor(selectType: () => ExplicitPromise<Type>) {
+    this.#selectType = selectType;
   }
 
-  get color() {
-    return this.#color.value;
-  }
-
-  set color(value) {
-    this.#color.value = value;
-    this.figures.forEach(f => f.color = value);
-  }
-
-  interaction: (() => ExplicitPromise<Type>) = () => new ExplicitPromise<Type>(() => {});
-  promise: ExplicitPromise<Type> | undefined;
-
-  async pick(color: Color) {
-    this.color = color;
-    this.promise = this.interaction();
-    return await this.promise;
-  }
+  pick = async (color: Color) => {
+    this.figures.forEach(f => f.color = color);
+    this.#selector = this.#selectType();
+    return await this.#selector;
+  };
 
   select(type: Type) {
-    this.promise?.resolve(type);
-  }
-
-  resolve(type: Type) {
-    this.promise?.resolve(type);
+    this.#selector?.resolve(type);
   }
 }

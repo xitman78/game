@@ -1,33 +1,13 @@
 import { ref, shallowReactive, type Ref } from 'vue';
 import { Vec } from '@/lib/bi';
-
-export type Color = 'white' | 'black';
-export type Type = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
-export type Move = 'normal' | 'capture' | 'en-passant' | 'king-castle' | 'queen-castle';
-
-export type FigureData = {
-  color: Color;
-  type: Type;
-  x: number;
-  y: number;
-  moved?: boolean;
-  passable?: boolean;
-};
-
-export type MoveData = {
-  remove?: Vec[];
-  move?: { from: Vec; to: Vec }[];
-};
+import type { Color, MoveData, PickType, Setup, Type } from '@/modules/chess/types';
+import { Figure } from '@/modules/chess/figure';
+import { ExplicitPromise } from '@/lib/async';
 
 export function pos(v: Vec) {
   const letters = 'abcdefgh';
   return `${letters[v.x]}${v.y + 1}`;
 }
-
-export type Setup = {
-  turn: Color;
-  figures: FigureData[];
-};
 
 export const defaultSetup: Setup = {
   turn: 'white',
@@ -67,52 +47,13 @@ export const defaultSetup: Setup = {
   ],
 };
 
-export class Figure {
-  #color: Ref<Color> = ref('white');
-  #type: Ref<Type>;
-  #position: Ref<Vec>;
-  moved = false;
-  passable = false;
-
-  constructor(data: FigureData) {
-    this.color = data.color;
-    this.#type = ref(data.type);
-    this.#position = ref(new Vec(data.x, data.y));
-    this.moved = data.moved || false;
-    this.passable = data.passable || false;
-  }
-
-  get color() {
-    return this.#color.value;
-  }
-
-  set color(value) {
-    this.#color.value = value;
-  }
-
-  get type() {
-    return this.#type.value;
-  }
-
-  // pawn can change it's type
-  set type(value) {
-    this.#type.value = value;
-  }
-
-  get position() {
-    return this.#position.value;
-  }
-
-  set position(value) {
-    this.#position.value = value;
-  }
-}
-
 export class Chess {
   readonly #setup: Setup;
   readonly #turn: Ref<Color> = ref('white');
 
+  readonly #pick: PickType = () => (new ExplicitPromise<Type>(resolve => resolve('queen')));
   readonly figures = shallowReactive<Figure[]>([]);
+  pick = this.#pick;
 
   #enPassant: Vec | undefined;
 
@@ -142,7 +83,7 @@ export class Chess {
     });
   }
 
-  move(figure: Figure, x: number, y: number) {
+  async move(figure: Figure, x: number, y: number) {
     const { x: fx, y: fy } = figure.position;
     const data = this.validMoves(figure).find(({ move }) => (move && move.some(({ from, to }) => {
       return from.x === fx && from.y === fy && to.x === x && to.y === y;
@@ -150,7 +91,7 @@ export class Chess {
 
     if (!data) return;
 
-    this.#apply(data);
+    await this.#apply(data, true);
     this.#turn.value = this.turn !== 'white' ? 'white' : 'black';
   }
 
@@ -212,13 +153,13 @@ export class Chess {
         });
       });
       const newState = new Chess(setup);
-      newState.#apply(move);
+      newState.#applySync(move);
       const newKing = newState.figures.find(f => f.color === king.color && f.type === 'king')!;
       return newState.#check(newKing).length === 0;
     });
   }
 
-  #apply({ remove, move }: MoveData) {
+  async #apply({ remove, move }: MoveData, pick: boolean) {
     if (remove) {
       remove.forEach((v) => {
         const index = this.figures.findIndex(f => f.position.x === v.x && f.position.y === v.y);
@@ -227,6 +168,39 @@ export class Chess {
         }
       });
     }
+
+    this.#enPassant = undefined;
+    if (!move) return;
+
+    for (const { from, to } of move) {
+      const index = this.figures.findIndex(f => f.position.x === from.x && f.position.y === from.y);
+      if (index !== -1) {
+        const figure = this.figures[index];
+        figure.position = to;
+        figure.moved = true;
+        if (figure.type === 'pawn') {
+          if (Math.abs(from.y - to.y) === 2) {
+            this.#enPassant = to;
+          }
+          if (pick && (to.y === 0 || to.y === 7)) {
+            const type = await this.pick(this.turn);
+            figure.type = type;
+          }
+        }
+      }
+    }
+  }
+
+  #applySync({ remove, move }: MoveData) {
+    if (remove) {
+      remove.forEach((v) => {
+        const index = this.figures.findIndex(f => f.position.x === v.x && f.position.y === v.y);
+        if (index !== -1) {
+          this.figures.splice(index, 1);
+        }
+      });
+    }
+    this.#enPassant = undefined;
     if (move) {
       move.forEach(({ from, to }) => {
         const index = this.figures.findIndex(f => f.position.x === from.x && f.position.y === from.y);
@@ -234,11 +208,10 @@ export class Chess {
           const figure = this.figures[index];
           figure.position = to;
           figure.moved = true;
-          if (figure.type === 'pawn' && Math.abs(from.y - to.y) === 2) {
-            this.#enPassant = to;
-          }
-          else {
-            this.#enPassant = undefined;
+          if (figure.type === 'pawn') {
+            if (Math.abs(from.y - to.y) === 2) {
+              this.#enPassant = to;
+            }
           }
         }
       });

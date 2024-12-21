@@ -8,13 +8,15 @@ import UiItem from '@/ui/item.vue';
 
 // views
 import BoardView from '@/modules/chess/board-view.vue';
-import FigureSelector from '@/modules/chess/figure-selector.vue';
+import FigureSelectorView from '@/modules/chess/figure-selector.vue';
 import AppView from './app-view.vue';
 
 import { Board } from '@/modules/chess/board';
-import { Chess, type Type } from '@/modules/chess/chess';
+import { Chess } from '@/modules/chess/chess';
 import { Dialog } from '@/ui/lib/dialog';
 import { ExplicitPromise } from '@/lib/async';
+import type { Type } from '@/modules/chess/types';
+import { FigureSelector } from '@/modules/chess/figure-selector';
 
 export class App {
   readonly #vueApp: VueApp;
@@ -24,11 +26,11 @@ export class App {
     {
       turn: 'white',
       figures: [
-        { color: 'white', type: 'pawn', x: 2, y: 1 },
+        { color: 'white', type: 'pawn', x: 2, y: 2 },
         { color: 'white', type: 'pawn', x: 6, y: 4 },
         { color: 'white', type: 'pawn', x: 7, y: 6 },
         { color: 'white', type: 'rook', x: 0, y: 0 },
-        { color: 'white', type: 'queen', x: 3, y: 2 },
+        { color: 'white', type: 'queen', x: 3, y: 5 },
         { color: 'white', type: 'knight', x: 1, y: 0 },
         { color: 'white', type: 'bishop', x: 2, y: 0 },
         { color: 'white', type: 'bishop', x: 6, y: 1 },
@@ -43,6 +45,15 @@ export class App {
   );
 
   readonly board = new Board(this.chess);
+  readonly figureSelector = new FigureSelector(
+    () => new ExplicitPromise<Type>(
+      () => { this.dialog.showModal(); },
+      async (resolve, type) => {
+        await this.dialog.closeAsync('transform');
+        resolve(type);
+      },
+    ),
+  );
 
   constructor() {
     this.#vueApp = createApp(AppView, { model: this });
@@ -54,16 +65,10 @@ export class App {
       .component('ui-item', UiItem)
       // views
       .component('board-view', BoardView)
-      .component('figure-selector', FigureSelector)
+      .component('figure-selector', FigureSelectorView)
     ;
 
-    this.board.figureSelector.interaction = () => new ExplicitPromise<Type>(
-      () => { this.dialog.showModal(); },
-      (resolve, type) => {
-        this.dialog.closeAsync('transform');
-        resolve(type);
-      },
-    );
+    this.chess.pick = this.figureSelector.pick;
   }
 
   run() {

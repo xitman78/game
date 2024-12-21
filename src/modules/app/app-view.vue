@@ -5,7 +5,7 @@ const { model } = defineProps<{ model: App }>();
 
 function keydown(e: KeyboardEvent) {
   if (e.code === 'Escape') {
-    model.board.figureSelector.resolve('queen');
+    model.figureSelector.select('queen');
   }
 }
 </script>
@@ -18,12 +18,9 @@ function keydown(e: KeyboardEvent) {
           <div class="flex ai-center px-2">
             <h3>dialog</h3>
             <div class="spacer" />
-            <!-- <ui-button class="fs-24 flat mouse" @click="model.hide()">
-              <ui-icon class="close" />
-            </ui-button> -->
           </div>
           <div class="dlg-content">
-            <figure-selector :model="model.board.figureSelector" />
+            <figure-selector :model="model.figureSelector" />
           </div>
         </div>
       </ui-dialog>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Type } from './chess';
 import type { FigureSelector } from './figure-selector';
+import type { Type } from './types';
 
 const { model } = defineProps<{ model: FigureSelector }>();
 
