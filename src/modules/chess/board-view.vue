@@ -2,12 +2,13 @@
 import { type Board } from './board';
 
 const { model } = defineProps<{ model: Board }>();
-const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
+// const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+// const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 </script>
 
 <template>
-  <div class="board-outer">
+  <ui-item class="board-inner" :model="model.root" />
+  <!-- <div class="board-outer">
     <div></div>
     <div class="board-side row">
       <span v-for="i in letters" :key="i">{{ i }}</span>
@@ -27,14 +28,15 @@ const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
       <span v-for="i in letters" :key="i">{{ i }}</span>
     </div>
     <div></div>
-  </div>
+  </div> -->
 </template>
 
 <style lang="scss">
 .board-outer {
-  position: relative;
-  width: min(75vw, 75vh);
-  aspect-ratio: 1;
+  position: absolute;
+  inset: 0;
+  // width: min(75vw, 75vh);
+  // aspect-ratio: 1;
   border: 3px solid rgb(var(--border));
   display: grid;
   grid-template-columns: 2em 1fr 2em;

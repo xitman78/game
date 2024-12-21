@@ -46,10 +46,17 @@ export class App {
 
   readonly board = new Board(this.chess);
   readonly figureSelector = new FigureSelector(
+    // () => new ExplicitPromise<Type>(
+    //   () => { this.dialog.showModal(); },
+    //   async (resolve, type) => {
+    //     await this.dialog.closeAsync('transform');
+    //     resolve(type);
+    //   },
+    // ),
     () => new ExplicitPromise<Type>(
-      () => { this.dialog.showModal(); },
+      () => {},
       async (resolve, type) => {
-        await this.dialog.closeAsync('transform');
+        // await this.dialog.closeAsync('transform');
         resolve(type);
       },
     ),

@@ -1,3 +1,4 @@
+import { ref } from 'vue';
 import { it } from '@/lib/reactive';
 import { Shape } from '@/modules/chess/shape';
 import { ExplicitPromise } from '@/lib/async';
@@ -7,6 +8,7 @@ import type { Color, Type } from '@/modules/chess/types';
 export class FigureSelector {
   readonly #selectType: () => ExplicitPromise<Type>;
   #selector: ExplicitPromise<Type> | undefined;
+  readonly #show = ref(false);
 
   readonly figures: Figure[] = (<Type[]>['rook', 'knight', 'bishop', 'queen'])
     .map(type => new Figure({ color: 'black', type, x: 0, y: 0 }));
@@ -26,10 +28,20 @@ export class FigureSelector {
   pick = async (color: Color) => {
     this.figures.forEach(f => f.color = color);
     this.#selector = this.#selectType();
+    this.show = true;
     return await this.#selector;
   };
 
   select(type: Type) {
+    this.show = false;
     this.#selector?.resolve(type);
+  }
+
+  get show() {
+    return this.#show.value;
+  }
+
+  set show(value) {
+    this.#show.value = value;
   }
 }
