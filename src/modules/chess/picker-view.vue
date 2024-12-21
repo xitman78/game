@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { FigureSelector } from './figure-selector';
+import type { Picker } from './picker';
 import type { Type } from './types';
 
-const { model } = defineProps<{ model: FigureSelector }>();
+const { model } = defineProps<{ model: Picker }>();
 
 const types: Type[] = ['rook', 'knight', 'bishop', 'queen'];
 </script>
