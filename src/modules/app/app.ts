@@ -9,6 +9,7 @@ import UiItem from '@/ui/item.vue';
 // views
 import BoardView from '@/modules/chess/board-view.vue';
 import PickerView from '@/modules/chess/picker-view.vue';
+import RemovedFiguresView from '@/modules/chess/removed-figures-view.vue';
 import AppView from './app-view.vue';
 
 import { Board } from '@/modules/chess/board';
@@ -17,6 +18,7 @@ import { Dialog } from '@/ui/lib/dialog';
 import { ExplicitPromise } from '@/lib/async';
 import type { Color, Type } from '@/modules/chess/types';
 import { Picker } from '@/modules/chess/picker';
+import { RemovedFigures } from '@/modules/chess/removed-figures';
 
 export class App {
   readonly #vueApp: VueApp;
@@ -46,6 +48,8 @@ export class App {
 
   readonly board = new Board(this.chess);
   readonly picker = new Picker(() => new ExplicitPromise<Type>(() => {}));
+  readonly removedWhite = new RemovedFigures(() => this.chess.removedWhite);
+  readonly removedBlack = new RemovedFigures(() => this.chess.removedBlack);
 
   #promise: ExplicitPromise<void> | undefined;
   readonly #showWin = (color: Color) => new ExplicitPromise<void>(
@@ -78,6 +82,7 @@ export class App {
       // views
       .component('board-view', BoardView)
       .component('picker-view', PickerView)
+      .component('removed-figures-view', RemovedFiguresView)
     ;
 
     this.chess.pick = this.picker.pick;

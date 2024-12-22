@@ -46,7 +46,9 @@ const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
       </div>
       <div class="board-border"></div>
       <picker-view class="pick-black" :model="model.picker" :color="'black'" />
-      <!-- <div class="grid-item" v-for="i in 20" :key="i"></div> -->
+      <removed-figures-view class="removed-white" :model="model.removedWhite" />
+      <removed-figures-view class="removed-black" :model="model.removedBlack" />
+      <!-- <div class="grid-item" v-for="i in 18" :key="i"></div> -->
     </div>
   </div>
 </template>
@@ -121,6 +123,18 @@ const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
   grid-column-end: -3;
   grid-row-start: 3;
   grid-row-end: 5;
+}
+
+.removed-white {
+  position: relative;
+  grid-column-start: 1;
+  grid-row-start: 4;
+}
+
+.removed-black {
+  position: relative;
+  grid-column-start: -2;
+  grid-row-start: 3;
 }
 
 .pick-white {
