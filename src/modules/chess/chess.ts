@@ -3,11 +3,6 @@ import { Vec } from '@/lib/bi';
 import type { Color, FigureData, MoveData, Setup, Type } from '@/modules/chess/types';
 import { Figure } from '@/modules/chess/figure';
 
-export function pos(v: Vec) {
-  const letters = 'abcdefgh';
-  return `${letters[v.x]}${v.y + 1}`;
-}
-
 export const defaultSetup: Setup = {
   turn: 'white',
   figures: [
@@ -105,6 +100,8 @@ export class Chess {
   }
 
   async move(figure: Figure, x: number, y: number) {
+    if (figure.color !== this.turn) return;
+
     const { x: fx, y: fy } = figure.position;
     const data = this.validMoves(figure).find(({ move }) => (move && move.some(({ from, to }) => {
       return from.x === fx && from.y === fy && to.x === x && to.y === y;

@@ -1,61 +1,49 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { type Board } from './board';
 
 const { model } = defineProps<{ model: Board }>();
-// const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-// const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
+
+const root = ref<HTMLElement>();
+onMounted(() => model.mount(root.value!));
+onBeforeUnmount(() => model.unmount());
 </script>
 
 <template>
-  <ui-item class="board-inner" :model="model.root" />
-  <!-- <div class="board-outer">
-    <div></div>
-    <div class="board-side row">
-      <span v-for="i in letters" :key="i">{{ i }}</span>
-    </div>
-    <div></div>
-    <div class="board-side col">
-      <span v-for="i in numbers" :key="i">{{ i }}</span>
-    </div>
-    <div class="relative">
-      <ui-item class="board-inner" :model="model.root" />
-    </div>
-    <div class="board-side col">
-      <span v-for="i in numbers" :key="i">{{ i }}</span>
-    </div>
-    <div></div>
-    <div class="board-side row">
-      <span v-for="i in letters" :key="i">{{ i }}</span>
-    </div>
-    <div></div>
-  </div> -->
+  <div ref="root" class="absolute inset">
+    <ui-item class="absolute inset" :model="model.root" />
+  </div>
 </template>
 
 <style lang="scss">
-.board-outer {
-  position: absolute;
-  inset: 0;
-  // width: min(75vw, 75vh);
-  // aspect-ratio: 1;
-  border: 3px solid rgb(var(--border));
-  display: grid;
-  grid-template-columns: 2em 1fr 2em;
-  grid-template-rows: 2em 1fr 2em;
-}
-
-.board-inner {
-  position: absolute;
-  inset: 0;
-}
-
 .board-side {
   display: flex;
   align-items: center;
   justify-content: space-around;
 }
 
-.dark { fill: rgb(64 16 16); }
-.light { fill: rgb(128 128 128); }
+.dark {
+  fill: rgb(64 16 16);
+  transition: fill var(--fast);
+  &:hover { fill: rgb(88 22 22); }
+}
+
+.light {
+  fill: rgb(128 128 128);
+  transition: fill var(--fast);
+  &:hover { fill: rgb(148 148 148); }
+}
+
+.board-text {
+  font-size: 0.20px;
+  fill: rgb(var(--text));
+}
+
 .black { fill: black; }
 .white { fill: white; }
+
+#pick-white .white:hover,
+#pick-black .black:hover {
+  fill: darkred;
+}
 </style>

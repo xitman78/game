@@ -7,10 +7,12 @@ import type { Figure } from '@/modules/chess/figure';
 
 export class Shape extends Transformable {
   readonly #disposer = new Disposable();
+  readonly figure: Figure;
 
   constructor(figure: Figure) {
     super('g');
 
+    this.figure = figure;
     const scale = 1 / 8; // all shape images have size 8x8
     this.scale = new Vec(scale, scale);
     const use = it('use');
@@ -39,5 +41,6 @@ export class Shape extends Transformable {
 
   dispose() {
     this.#disposer.dispose();
+    super.dispose();
   }
 }
