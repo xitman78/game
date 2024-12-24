@@ -53,7 +53,8 @@
     />
   </defs>
   <g id="scene" transform="translate(0 10) scale(1 -1)">
-    <rect stroke-width="0.05" x="0.025" y="0.525" width="8.95" height="8.95" stroke="rgb(128 128 128)" fill="none" />
+    <rect class="board-bg" x="0" y="0" width="9" height="9" />
+    <rect class="board-border" stroke-width="0.05" x="0.025" y="0.525" width="8.95" height="8.95" />
     <g id="board-text" class="board-text" transform="translate(0 9.5) scale (1 -1)">
       <text x="1" y="0.35" text-anchor="middle">A</text>
       <text x="2" y="0.35" text-anchor="middle">B</text>

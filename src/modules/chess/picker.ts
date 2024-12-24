@@ -14,25 +14,18 @@ export class Picker {
   readonly figures: Figure[] = (<Type[]>['rook', 'knight', 'bishop', 'queen'])
     .map((type, index) => new Figure({ color: 'black', type, x: index, y: 0 }));
 
-  readonly shapes: Shape[] = this.figures.map(f => new Shape(f));
+  readonly #bg = it('rect', { class: 'board-bg', x: 0, y: 0, width: 4, height: 1 });
+  readonly #shapes: Shape[] = this.figures.map(f => new Shape(f));
 
-  readonly images = this.shapes.map(shape =>
-    it('svg', { viewBox: '0 0 1 1' }, [
-      it('g', { transform: 'translate(0 1) scale(1 -1)' }, []),
-    ]),
-  );
-
-  readonly root = it('g', this.shapes);
+  readonly root = it('g', [this.#bg], this.#shapes);
 
   constructor(pickType: () => ExplicitPromise<Type>) {
     this.#pickType = pickType;
-    this.shapes.forEach(shape => shape.on('click', () => {
+    this.#shapes.forEach(shape => shape.on('click', () => {
       this.show = false;
       this.#promise?.resolve(shape.figure.type);
     }));
   }
-
-  #click = (shape: Shape) => () => {};
 
   pick = async (color: Color) => {
     this.#color.value = color;

@@ -47,9 +47,18 @@ dialog {
   color: rgb(var(--text));
 }
 
+.surface {
+  background-color: rgb(var(--surface));
+  fill: rgb(var(--surface));
+}
+
 .view {
   position: absolute;
   inset: 0;
+}
+
+svg text {
+  user-select: none;
 }
 
 .absolute { position: absolute; }

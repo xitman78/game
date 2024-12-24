@@ -23,20 +23,29 @@ onBeforeUnmount(() => model.unmount());
 }
 
 .dark {
-  fill: rgb(64 16 16);
+  fill: rgb(72 16 16);
   transition: fill var(--fast);
-  &:hover { fill: rgb(88 22 22); }
+  &.hover { fill: rgb(99 22 22); }
 }
 
 .light {
   fill: rgb(128 128 128);
   transition: fill var(--fast);
-  &:hover { fill: rgb(148 148 148); }
+  &.hover { fill: rgb(160 160 160); }
 }
 
 .board-text {
   font-size: 0.20px;
   fill: rgb(var(--text));
+}
+
+.board-bg {
+  fill: rgb(var(--bg));
+}
+
+.board-border {
+  stroke: rgb(var(--border));
+  fill: none;
 }
 
 .black { fill: black; }
