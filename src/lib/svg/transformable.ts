@@ -14,8 +14,8 @@ export class Transformable extends re.Item implements std.IDisposable {
   readonly #rotation = ref(0);
   readonly #scale = ref(new bi.Vec(1, 1));
 
-  constructor(tag: string, data?: re.Attributes) {
-    super(tag, data);
+  constructor(tag: string, data?: re.Attributes | string | re.Item[], children?: re.Item[]) {
+    super(tag, data, children);
     this.#disposer.add(watchEffect(() => (this.attributes.transform = this.transform.toCss())));
   }
 

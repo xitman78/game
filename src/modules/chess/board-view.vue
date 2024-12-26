@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { type Board } from './board';
 
 const { model } = defineProps<{ model: Board }>();
-
-const root = ref<HTMLElement>();
-onMounted(() => model.mount(root.value!));
-onBeforeUnmount(() => model.unmount());
 </script>
 
 <template>
-  <div ref="root" class="absolute inset">
+  <div class="absolute inset">
     <ui-item class="absolute inset" :model="model.root" />
   </div>
 </template>
@@ -54,5 +49,12 @@ onBeforeUnmount(() => model.unmount());
 #pick-white .white:hover,
 #pick-black .black:hover {
   fill: darkred;
+}
+
+.corners {
+  stroke: darkgreen;
+  stroke-width: 0.5;
+  stroke-linecap: square;
+  fill: none;
 }
 </style>

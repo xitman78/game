@@ -14,8 +14,8 @@ export type FigureData = {
 };
 
 export type MoveData = {
-  remove?: Vec[];
-  move?: { from: Vec; to: Vec }[];
+  remove: Vec[];
+  move: { from: Vec; to: Vec }[];
 };
 
 export type Setup = {

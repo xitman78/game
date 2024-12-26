@@ -95,7 +95,7 @@ export class Chess {
 
     const { x: fx, y: fy } = figure.position;
     return this.validMoves(figure).some(({ move }) => {
-      return move && move.some(({ from, to }) => from.x === fx && from.y === fy && to.x === x && to.y === y);
+      return move.some(({ from, to }) => from.x === fx && from.y === fy && to.x === x && to.y === y);
     });
   }
 
@@ -103,7 +103,7 @@ export class Chess {
     if (figure.color !== this.turn) return;
 
     const { x: fx, y: fy } = figure.position;
-    const data = this.validMoves(figure).find(({ move }) => (move && move.some(({ from, to }) => {
+    const data = this.validMoves(figure).find(({ move }) => (move.some(({ from, to }) => {
       return from.x === fx && from.y === fy && to.x === x && to.y === y;
     })));
 
@@ -129,12 +129,7 @@ export class Chess {
   }
 
   at(x: number, y: number) {
-    for (const f of this.figures) {
-      if (f.position.x === x && f.position.y === y) {
-        return f;
-      }
-    }
-    return undefined;
+    return this.figures.find(f => f.position.x === x && f.position.y === y);
   }
 
   allMoves(figure: Figure, check: boolean): MoveData[] {
@@ -162,7 +157,7 @@ export class Chess {
         turn: nextColor,
         figures: [],
       };
-      this.figures.forEach((f) => {
+      this.figures.forEach(f =>
         setup.figures.push({
           color: f.color,
           type: f.type,
@@ -170,8 +165,8 @@ export class Chess {
           y: f.position.y,
           moved: f.moved,
           passable: f.passable,
-        });
-      });
+        }),
+      );
       const newState = new Chess(setup);
       newState.#apply(move);
       const newKing = newState.figures.find(f => f.color === king.color && f.type === 'king')!;
@@ -179,24 +174,18 @@ export class Chess {
     });
   }
 
-  #remove(remove?: Vec[]) {
-    if (!remove) return;
-
+  #remove(remove: Vec[]) {
     remove.forEach((v) => {
       const index = this.figures.findIndex(f => f.position.x === v.x && f.position.y === v.y);
       if (index !== -1) {
-        const removed = this.figures.splice(index, 1)[0];
-        removed.position = new Vec(0, 0);
-        this.removed.push(removed);
+        this.removed.push(...this.figures.splice(index, 1));
       }
     });
   }
 
   async #applyAsync({ remove, move }: MoveData) {
     this.#remove(remove);
-
     this.#enPassant = undefined;
-    if (!move) return;
 
     for (const { from, to } of move) {
       const index = this.figures.findIndex(f => f.position.x === from.x && f.position.y === from.y);
@@ -219,9 +208,7 @@ export class Chess {
 
   #apply({ remove, move }: MoveData) {
     this.#remove(remove);
-
     this.#enPassant = undefined;
-    if (!move) return;
 
     for (const { from, to } of move) {
       const index = this.figures.findIndex(f => f.position.x === from.x && f.position.y === from.y);
@@ -252,9 +239,9 @@ export class Chess {
     }
 
     if (!this.at(x, y1)) {
-      moves.push({ move: [{ from: figure.position, to: new Vec(x, y1) }] });
+      moves.push({ remove: [], move: [{ from: figure.position, to: new Vec(x, y1) }] });
       if (y === start && !this.at(x, y + 2 * dy)) {
-        moves.push({ move: [{ from: figure.position, to: new Vec(x, y + 2 * dy) }] });
+        moves.push({ remove: [], move: [{ from: figure.position, to: new Vec(x, y + 2 * dy) }] });
       }
     }
 
@@ -330,6 +317,7 @@ export class Chess {
       const rook7 = this.at(7, y);
       if (rook7 && !rook7.moved && !this.at(5, y) && !this.at(6, y)) {
         moves.push({
+          remove: [],
           move: [{ from: figure.position, to: new Vec(6, y) }, { from: rook7.position, to: new Vec(5, y) }],
         });
       }
@@ -337,6 +325,7 @@ export class Chess {
       const rook0 = this.at(0, y);
       if (rook0 && !rook0.moved && !this.at(1, y) && !this.at(2, y) && !this.at(3, y)) {
         moves.push({
+          remove: [],
           move: [{ from: figure.position, to: new Vec(2, y) }, { from: rook0.position, to: new Vec(3, y) }],
         });
       }
@@ -381,7 +370,7 @@ export class Chess {
           break;
         }
         else {
-          moves.push({ move: [{ from: figure.position, to: new Vec(x1, y1) }] });
+          moves.push({ remove: [], move: [{ from: figure.position, to: new Vec(x1, y1) }] });
         }
       }
     });
@@ -397,7 +386,7 @@ export class Chess {
         moves.push({ remove: [new Vec(x, y)], move });
       }
       else if (!other) {
-        moves.push({ move });
+        moves.push({ remove: [], move });
       }
     }
   }

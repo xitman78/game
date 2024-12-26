@@ -3,16 +3,48 @@ import scene from '@/assets/images/chess.svg?raw';
 import { watch } from 'vue';
 import { Vec } from '@/lib/bi';
 import { Item, fromSource, it, type Attributes } from '@/lib/reactive';
-import { clamp, Disposable } from '@/lib/std';
+import { Buttons, clamp, Disposable } from '@/lib/std';
 import { Chess } from '@/modules/chess/chess';
 import { Shape } from '@/modules/chess/shape';
 import type { Figure } from '@/modules/chess/figure';
-import { Controller } from '@/lib/svg/controller';
-import { Camera } from '@/lib/svg/camera';
 import { RemovedFigures } from '@/modules/chess/removed-figures';
 import { Picker } from '@/modules/chess/picker';
 import { ExplicitPromise } from '@/lib/async';
 import type { Color, Type } from '@/modules/chess/types';
+import { Transformable } from '@/lib/svg/transformable';
+
+export class Selection {
+  #chess: Chess;
+  #parent: Item;
+  #figure?: Figure;
+
+  constructor(chess: Chess, parent: Item) {
+    this.#chess = chess;
+    this.#parent = parent;
+  }
+
+  get figure() {
+    return this.#figure;
+  }
+
+  set figure(value) {
+    this.#figure = value;
+    this.#parent.clear();
+    if (!this.#figure) return;
+
+    const { x, y } = this.#figure.position;
+    const moves = this.#chess.validMoves(this.#figure)
+      .map(data => data.move.filter(({ from }) => from.x === x && from.y === y))
+      .flat()
+      .map(({ to }) => to);
+    this.#parent.add(...moves.map((to) => {
+      const g = new Transformable('g', { class: 'corners' }, [it('use', { href: '#mark' })]);
+      g.scale = new Vec(0.125, 0.125);
+      g.position = to;
+      return g;
+    }));
+  }
+}
 
 export class Board {
   readonly root: Item;
@@ -20,11 +52,6 @@ export class Board {
   readonly #chess: Chess;
 
   readonly #disposer = new Disposable();
-  readonly #mounted = new Disposable();
-
-  readonly #scene: Item;
-  readonly #camera = new Camera({ position: new Vec(4.5, 5), scale: new Vec(1, -1) });
-  readonly #controller: Controller;
 
   readonly #grid: Item[] = [];
 
@@ -35,6 +62,7 @@ export class Board {
   readonly #picker = new Picker(() => new ExplicitPromise<Type>(() => {}));
   readonly #pickWhite: Item;
   readonly #pickBlack: Item;
+  readonly #selection: Selection;
 
   constructor(chess: Chess) {
     this.#chess = chess;
@@ -42,12 +70,12 @@ export class Board {
     this.#removedWhite = new RemovedFigures(() => this.#chess.removedWhite);
     this.#removedBlack = new RemovedFigures(() => this.#chess.removedBlack);
     this.root = fromSource(scene)!;
-    this.#scene = this.root.find('scene')!;
     this.#figures = this.root.find('board-figures')!;
     this.root.find('removed-white')!.add(this.#removedWhite.root);
     this.root.find('removed-black')!.add(this.#removedBlack.root);
     this.#pickWhite = this.root.find('pick-white')!;
     this.#pickBlack = this.root.find('pick-black')!;
+    this.#selection = new Selection(chess, this.root.find('board-selection')!);
 
     for (let y = 0; y < 8; ++y) {
       for (let x = 0; x < 8; ++x) {
@@ -61,19 +89,11 @@ export class Board {
     this.root.on('pointermove', this.#drag);
     this.root.on('pointerup', this.#drop);
 
-    this.#controller = new Controller(this.root, this.#scene, this.#camera, {
-      pan: false,
-      rotate: false,
-      zoom: false,
-      minZoom: 0.5,
-      maxZoom: 2,
-    });
-    this.#controller.resize(9, 10);
-
     this.#disposer.add(
       watch(
         () => [...chess.figures],
         (cur, old) => {
+          this.#selection.figure = undefined;
           // unwatch removed figures
           old?.forEach((f) => {
             if (!cur.includes(f)) {
@@ -93,17 +113,8 @@ export class Board {
         },
         { immediate: true },
       ),
-      watch(
-        () => this.#picker.show,
-        (show) => {
-          if (show) {
-
-          }
-        },
-      ),
       () => {
         this.#shapes.forEach(shape => shape.dispose());
-        this.#mounted.dispose();
       },
     );
   }
@@ -112,24 +123,28 @@ export class Board {
     this.#disposer.dispose();
   }
 
-  mount(element: HTMLElement) {
-    this.#mounted.add(() => this.#controller.dispose());
-    this.#controller.mount(element);
+  #lockCount = 0;
+  #lock() {
+    ++this.#lockCount;
   }
 
-  unmount() {
-    this.#mounted.dispose();
+  #unlock() {
+    --this.#lockCount;
+  }
+
+  get #locked() {
+    return this.#lockCount > 0;
   }
 
   #pickType = async (color: Color) => {
     const parent = color === 'white' ? this.#pickWhite : this.#pickBlack;
     parent.add(this.#picker.root);
+    this.#lock();
     const type = await this.#picker.pick(color);
+    this.#unlock();
     parent.remove(this.#picker.root);
     return type;
   };
-
-  #selectedFigure: Figure | undefined;
 
   #pos(e: MouseEvent) {
     const rect = this.root.element!.getBoundingClientRect();
@@ -140,52 +155,75 @@ export class Board {
     return new Vec(x, y);
   }
 
-  #pick = (e: PointerEvent) => {
+  #printMoves(figure?: Figure) {
+    if (!figure) return;
+
+    const { x, y } = figure.position;
+    const pos = (v: Vec) => `${'abcdefgh'[v.x]}${v.y + 1}`;
+    const all = this.#chess.allMoves(figure, false).map(data =>
+      data.move
+        .filter(({ from }) => from.x === x && from.y === y)
+        .map(({ to }) => `${pos(to)}`).join(' ')).join(' ');
+    const valid = this.#chess.validMoves(figure).map(data =>
+      data.move
+        .filter(({ from }) => from.x === x && from.y === y)
+        .map(({ to }) => `${pos(to)}`).join(' ')).join(' ');
+    console.log(`${figure.color} ${figure.type} ${pos(figure.position)}\n\tmoves: ${all}\n\tvalid: ${valid}`);
+  }
+
+  #pick = async (e: PointerEvent) => {
+    if (this.#locked) return;
+
     const { x, y } = this.#pos(e);
     const fx = Math.floor(x);
     const fy = Math.floor(y);
     const figure = this.#chess.at(fx, fy);
+    // this.#printMoves(figure);
+
+    const selected = this.#selection.figure;
+    if (selected && this.#chess.canMove(selected, fx, fy)) {
+      this.#selection.figure = undefined;
+      await this.#chess.move(selected, fx, fy);
+      this.#shapes.get(selected)!.position = selected.position;
+      return;
+    }
+    else {
+      this.#selection.figure = figure;
+    }
     if (!figure) return;
 
-    // const pos = (v: Vec) => `${'abcdefgh'[v.x]}${v.y + 1}`;
-    // const all = this.#chess.allMoves(figure, false).map(data =>
-    //   data.move
-    //     ? data.move.filter(({ from }) => from.x === x && from.y === y).map(({ to }) => `${pos(to)}`).join(' ')
-    //     : '',
-    // ).join(' ');
-    // const valid = this.#chess.validMoves(figure).map(data =>
-    //   data.move
-    //     ? data.move.filter(({ from }) => from.x === x && from.y === y).map(({ to }) => `${pos(to)}`).join(' ')
-    //     : '',
-    // ).join(' ');
-    // console.log(`${figure.color} ${figure.type} ${pos(figure.position)}\n\tmoves: ${all}\n\tvalid: ${valid}`);
-
-    this.#selectedFigure = figure;
     const shape = this.#shapes.get(figure)!;
     shape.index = -1; // move to top
-    shape.position = new Vec(clamp(x, 0, 8) - 0.5, clamp(y, 0, 8) - 0.5);
+    // shape.position = new Vec(clamp(x, 0, 8) - 0.5, clamp(y, 0, 8) - 0.5);
     this.root.element!.setPointerCapture(e.pointerId);
   };
 
   #drag = (e: PointerEvent) => {
+    if (this.#locked) return;
     const { x, y } = this.#pos(e);
     this.#highlight(Math.floor(x), Math.floor(y));
-    if (!this.#selectedFigure) return;
-    const shape = this.#shapes.get(this.#selectedFigure)!;
+    if (!this.#selection.figure || !(e.buttons & Buttons.LEFT)) return;
+    const shape = this.#shapes.get(this.#selection.figure)!;
     shape.position = new Vec(clamp(x, 0, 8) - 0.5, clamp(y, 0, 8) - 0.5);
   };
 
   #drop = async (e: PointerEvent) => {
-    if (!this.#selectedFigure) return;
-
-    const figure = this.#selectedFigure;
-    this.#selectedFigure = undefined;
+    if (this.#locked) return;
+    if (!this.#selection.figure) return;
     this.root.element!.releasePointerCapture(e.pointerId);
 
     const { x, y } = this.#pos(e);
     const fx = Math.floor(x);
     const fy = Math.floor(y);
 
+    const figure = this.#selection.figure;
+
+    if (figure.position.x === fx && figure.position.y === fy) {
+      this.#shapes.get(figure)!.position = figure.position;
+      return;
+    }
+
+    this.#selection.figure = undefined;
     await this.#chess.move(figure, fx, fy);
     this.#shapes.get(figure)!.position = figure.position;
   };
