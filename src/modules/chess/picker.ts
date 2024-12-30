@@ -14,7 +14,7 @@ export class Picker {
   readonly figures: Figure[] = (<Type[]>['rook', 'knight', 'bishop', 'queen'])
     .map((type, index) => new Figure({ color: 'black', type, x: index, y: 0 }));
 
-  readonly #bg = it('rect', { class: 'board-bg', x: 0, y: 0, width: 4, height: 1 });
+  readonly #bg = it('rect', { class: 'board-bg thin-border', x: 0, y: 0, width: 4, height: 1 });
   readonly #shapes: Shape[] = this.figures.map(f => new Shape(f));
 
   readonly root = it('g', [this.#bg], this.#shapes);

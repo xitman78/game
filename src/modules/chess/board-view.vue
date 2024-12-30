@@ -38,6 +38,12 @@ const { model } = defineProps<{ model: Board }>();
   fill: rgb(var(--bg));
 }
 
+.thin-border {
+  stroke-width: 2px;
+  stroke: rgb(var(--border));
+  vector-effect: non-scaling-stroke;
+}
+
 .board-border {
   stroke: rgb(var(--border));
   fill: none;
@@ -51,9 +57,9 @@ const { model } = defineProps<{ model: Board }>();
   fill: darkred;
 }
 
-.corners {
-  stroke: darkgreen;
-  stroke-width: 0.5;
+.highlighted-cell {
+  stroke: rgb(255 255 255 / 0.5);
+  stroke-width: 0.25;
   stroke-linecap: square;
   fill: none;
 }

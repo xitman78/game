@@ -38,7 +38,7 @@ export class Selection {
       .flat()
       .map(({ to }) => to);
     this.#parent.add(...moves.map((to) => {
-      const g = new Transformable('g', { class: 'corners' }, [it('use', { href: '#mark' })]);
+      const g = new Transformable('g', { class: 'highlighted-cell' }, [it('use', { href: '#mark' })]);
       g.scale = new Vec(0.125, 0.125);
       g.position = to;
       return g;
@@ -187,14 +187,13 @@ export class Board {
       this.#shapes.get(selected)!.position = selected.position;
       return;
     }
-    else {
+    else if (figure?.color === this.#chess.turn) {
       this.#selection.figure = figure;
     }
-    if (!figure) return;
 
+    if (!figure) return;
     const shape = this.#shapes.get(figure)!;
     shape.index = -1; // move to top
-    // shape.position = new Vec(clamp(x, 0, 8) - 0.5, clamp(y, 0, 8) - 0.5);
     this.root.element!.setPointerCapture(e.pointerId);
   };
 
