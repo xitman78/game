@@ -1,11 +1,16 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { type Board } from './board';
 
 const { model } = defineProps<{ model: Board }>();
+
+const root = ref();
+onMounted(() => model.mount(root.value));
+onBeforeUnmount(() => model.unmount());
 </script>
 
 <template>
-  <div class="absolute inset">
+  <div ref="root" class="absolute inset">
     <ui-item class="absolute inset" :model="model.root" />
   </div>
 </template>
@@ -18,9 +23,9 @@ const { model } = defineProps<{ model: Board }>();
 }
 
 .dark {
-  fill: rgb(72 16 16);
+  fill: rgb(4 48 104);
   transition: fill var(--fast);
-  &.hover { fill: rgb(99 22 22); }
+  &.hover { fill: rgb(27 40 232); }
 }
 
 .light {
@@ -59,7 +64,7 @@ const { model } = defineProps<{ model: Board }>();
 
 .highlighted-cell {
   stroke: rgb(255 255 255 / 0.5);
-  stroke-width: 0.25;
+  stroke-width: 0.35;
   stroke-linecap: square;
   fill: none;
 }

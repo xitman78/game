@@ -12,6 +12,8 @@ import { Picker } from '@/modules/chess/picker';
 import { ExplicitPromise } from '@/lib/async';
 import type { Color, Type } from '@/modules/chess/types';
 import { Transformable } from '@/lib/svg/transformable';
+import { Camera } from '@/lib/svg/camera';
+import { Controller } from '@/lib/svg/controller';
 
 export class Selection {
   #chess: Chess;
@@ -64,6 +66,9 @@ export class Board {
   readonly #pickBlack: Item;
   readonly #selection: Selection;
 
+  readonly camera: Camera;
+  readonly controller: Controller;
+
   constructor(chess: Chess) {
     this.#chess = chess;
     this.#chess.pick = this.#pickType;
@@ -76,6 +81,15 @@ export class Board {
     this.#pickWhite = this.root.find('pick-white')!;
     this.#pickBlack = this.root.find('pick-black')!;
     this.#selection = new Selection(chess, this.root.find('board-selection')!);
+
+    this.camera = new Camera({
+      position: new Vec(4.5, 5),
+      scale: new Vec(1, -1),
+    });
+    this.controller = new Controller(this.root, this.root.find('scene')!, this.camera, {
+      width: 9,
+      height: 10,
+    });
 
     for (let y = 0; y < 8; ++y) {
       for (let x = 0; x < 8; ++x) {
@@ -121,6 +135,14 @@ export class Board {
 
   dispose() {
     this.#disposer.dispose();
+  }
+
+  mount(element: HTMLElement) {
+    this.controller.mount(element);
+  }
+
+  unmount() {
+    this.controller.unmount();
   }
 
   #lockCount = 0;
