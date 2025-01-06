@@ -1,5 +1,5 @@
 // icons
-@each $name in ('check', 'close', 'down', 'gt', 'lt', 'up') {
+@each $name in ('check', 'close', 'down', 'gt', 'lt', 'up', 'gear-solid') {
   .icon.#{$name} {
     mask-image: url(@/assets/icons/#{$name}.svg);
   }

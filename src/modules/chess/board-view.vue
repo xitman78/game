@@ -16,20 +16,14 @@ onBeforeUnmount(() => model.unmount());
 </template>
 
 <style lang="scss">
-.board-side {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-}
-
 .dark {
-  fill: rgb(4 48 104);
+  fill: rgb(var(--dark));
   transition: fill var(--fast);
   &.hover { fill: rgb(27 40 232); }
 }
 
 .light {
-  fill: rgb(128 128 128);
+  fill: rgb(var(--light));
   transition: fill var(--fast);
   &.hover { fill: rgb(160 160 160); }
 }

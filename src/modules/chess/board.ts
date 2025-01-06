@@ -138,11 +138,11 @@ export class Board {
   }
 
   mount(element: HTMLElement) {
-    this.controller.mount(element);
+    // this.controller.mount(element);
   }
 
   unmount() {
-    this.controller.unmount();
+    // this.controller.unmount();
   }
 
   #lockCount = 0;

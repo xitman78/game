@@ -4,6 +4,7 @@
 @use 'colors';
 @use 'icons';
 @use 'cursors';
+@use 'utils';
 
 @mixin expand-map($map) {
   @each $name, $value in $map {
