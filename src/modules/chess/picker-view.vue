@@ -9,7 +9,7 @@ const types: Type[] = ['rook', 'knight', 'bishop', 'queen'];
 
 <template>
   <div class="picker" :style="{ visibility: model.show && model.color === color ? 'visible' : 'hidden' }">
-    <ui-button v-for="(item, index) in model.images" :key="index" class="picker-button" @click="model.select(types[index])">
+    <ui-button v-for="(item, index) in model.figures" :key="index" class="picker-button" @click="model.select(types[index])">
       <ui-item class="figure" :model="item" />
     </ui-button>
   </div>
