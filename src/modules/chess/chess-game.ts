@@ -37,6 +37,7 @@ export class ChessGame {
 
   constructor() {
     this.chess.win = this.#win;
+    this.theme.load(); // Load saved theme on startup
   }
 
   readonly theme = new Theme();
