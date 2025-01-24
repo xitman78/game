@@ -23,7 +23,7 @@ function escape(e: KeyboardEvent) {
     <teleport to="body">
       <ui-dialog :model="model.themeDialog" class="theme-dialog">
         <div class="dlg-panel m-4">
-          <theme-view :model="model.theme" />
+          <theme-view :model="model.theme" @close="model.showTheme = false" />
         </div>
       </ui-dialog>
     </teleport>
