@@ -1,40 +1,53 @@
 <script setup lang="ts">
 import { type Theme } from './theme';
+import { watch } from 'vue';
+
 const { model } = defineProps<{ model: Theme }>();
 const emit = defineEmits(['close']);
+
+// Watch all RGB values and save automatically when they change
+watch(
+  [
+    () => model.light.r,
+    () => model.light.g,
+    () => model.light.b,
+    () => model.dark.r,
+    () => model.dark.g,
+    () => model.dark.b,
+  ],
+  () => model.save(),
+);
 </script>
 
 <template>
   <div class="theme-view">
     <div class="theme-header-row">
-      <h2>theme</h2>
+      <h5>Settings</h5>
     </div>
     <button class="close-button" @click="emit('close')">&times;</button>
 
     <div class="theme-grid">
 
       <div class="theme-header">Light cells:</div>
-      <div>r: {{ model.light.r }}</div>
+      <div>R: {{ model.light.r }}</div>
       <ui-range :min="0" :max="255" v-model="model.light.r" />
-      <div>g: {{ model.light.g }}</div>
+      <div>G: {{ model.light.g }}</div>
       <ui-range :min="0" :max="255" v-model="model.light.g" />
-      <div>b: {{ model.light.b }}</div>
+      <div>B: {{ model.light.b }}</div>
       <ui-range :min="0" :max="255" v-model="model.light.b" />
       <hr class="divider"/>
       <div class="theme-header">Dark cells:</div>
-      <div>r: {{ model.dark.r }}</div>
+      <div>R: {{ model.dark.r }}</div>
       <ui-range :min="0" :max="255" v-model="model.dark.r" />
-      <div>g: {{ model.dark.g }}</div>
+      <div>G: {{ model.dark.g }}</div>
       <ui-range :min="0" :max="255" v-model="model.dark.g" />
-      <div>b: {{ model.dark.b }}</div>
+      <div>B: {{ model.dark.b }}</div>
       <ui-range :min="0" :max="255" v-model="model.dark.b" />
 
     </div>
 
     <div class="action-buttons">
-      <ui-button class="btn" @click="model.save()">save</ui-button>
-      <ui-button class="btn" @click="model.load()">load</ui-button>
-      <ui-button class="btn" @click="model.reset()">reset</ui-button>
+      <ui-button class="btn" @click="model.reset()">Reset to default colors</ui-button>
     </div>
   </div>
 </template>
@@ -53,6 +66,7 @@ const emit = defineEmits(['close']);
   justify-content: space-between;
   align-items: center;
   padding-left: 1rem;
+  padding-top: 1rem;
 }
 
 .close-button {
