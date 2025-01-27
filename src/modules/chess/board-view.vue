@@ -19,13 +19,13 @@ onBeforeUnmount(() => model.unmount());
 .dark {
   fill: rgb(var(--dark));
   transition: fill var(--fast);
-  &.hover { fill: rgb(27 40 232); }
+  &.hover { fill: rgb(var(--dark-hover)); }
 }
 
 .light {
   fill: rgb(var(--light));
   transition: fill var(--fast);
-  &.hover { fill: rgb(160 160 160); }
+  &.hover { fill: rgb(var(--light-hover)); }
 }
 
 .board-text {
