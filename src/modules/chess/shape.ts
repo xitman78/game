@@ -31,7 +31,6 @@ export class Shape extends Transformable {
           const cssType = figure.type;
           const shapeId = figure.type;
           this.attributes.class = `${cssColor} ${cssType}`;
-          this.attributes.filter = `url(#${cssColor}-shadow)`;
           use.attributes.href = `#${shapeId}`;
         },
         { immediate: true },

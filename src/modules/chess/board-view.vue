@@ -19,13 +19,13 @@ onBeforeUnmount(() => model.unmount());
 .dark {
   fill: rgb(var(--dark));
   transition: fill var(--fast);
-  &.hover { fill: rgb(27 40 232); }
+  &.hover { fill: rgb(var(--dark-hover)); }
 }
 
 .light {
   fill: rgb(var(--light));
   transition: fill var(--fast);
-  &.hover { fill: rgb(160 160 160); }
+  &.hover { fill: rgb(var(--light-hover)); }
 }
 
 .board-text {
@@ -34,7 +34,7 @@ onBeforeUnmount(() => model.unmount());
 }
 
 .board-bg {
-  fill: rgb(var(--bg));
+  fill: rgb(25,51,65);
 }
 
 .thin-border {
@@ -45,11 +45,10 @@ onBeforeUnmount(() => model.unmount());
 
 .board-border {
   stroke: rgb(var(--border));
-  fill: none;
 }
 
-.black { fill: black; }
-.white { fill: white; }
+.black { stroke: #03374a; stroke-width: 0.28; fill: #034c67; stroke-linejoin: round; stroke-linecap: round; }
+.white { stroke: #b3f5ff; stroke-width: 0.28; fill: #6dbac5; stroke-linejoin: round; stroke-linecap: round; }
 
 #pick-white .white:hover,
 #pick-black .black:hover {
