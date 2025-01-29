@@ -38,6 +38,14 @@ export class RgbColor {
   get value() {
     return `${this.r} ${this.g} ${this.b}`;
   }
+
+  lighten(percent: number): string {
+    const factor = 1 + percent;
+    const r = Math.min(255, Math.round(this.r * factor));
+    const g = Math.min(255, Math.round(this.g * factor));
+    const b = Math.min(255, Math.round(this.b * factor));
+    return `${r} ${g} ${b}`;
+  }
 }
 
 export class Theme {
@@ -47,6 +55,8 @@ export class Theme {
   readonly #style = reactive({
     '--light': computed(() => this.light.value),
     '--dark': computed(() => this.dark.value),
+    '--light-hover': computed(() => this.light.lighten(0.3)),
+    '--dark-hover': computed(() => this.dark.lighten(0.3)),
   });
 
   get style() {

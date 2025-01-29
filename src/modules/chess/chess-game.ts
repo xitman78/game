@@ -6,27 +6,29 @@ import type { Color } from '@/modules/chess/types';
 import { Dialog, State } from '@/ui/lib/dialog';
 
 export class ChessGame {
-  readonly chess = new Chess(
-    {
-      turn: 'white',
-      figures: [
-        { color: 'white', type: 'pawn', x: 2, y: 2 },
-        { color: 'white', type: 'pawn', x: 6, y: 4 },
-        { color: 'white', type: 'pawn', x: 7, y: 6 },
-        { color: 'white', type: 'queen', x: 3, y: 5 },
-        { color: 'white', type: 'knight', x: 1, y: 0 },
-        { color: 'white', type: 'bishop', x: 2, y: 0 },
-        { color: 'white', type: 'bishop', x: 6, y: 1 },
-        { color: 'white', type: 'king', x: 4, y: 0 },
-        { color: 'white', type: 'rook', x: 7, y: 0 },
-        { color: 'black', type: 'bishop', x: 0, y: 4 },
-        { color: 'black', type: 'rook', x: 0, y: 7 },
-        { color: 'black', type: 'king', x: 4, y: 7 },
-        { color: 'black', type: 'pawn', x: 5, y: 6 },
-        { color: 'black', type: 'pawn', x: 0, y: 1 },
-      ],
-    },
-  );
+  // readonly chess = new Chess(
+  //   {
+  //     turn: 'white',
+  //     figures: [
+  //       { color: 'white', type: 'pawn', x: 2, y: 2 },
+  //       { color: 'white', type: 'pawn', x: 6, y: 4 },
+  //       { color: 'white', type: 'pawn', x: 7, y: 6 },
+  //       { color: 'white', type: 'queen', x: 3, y: 5 },
+  //       { color: 'white', type: 'knight', x: 1, y: 0 },
+  //       { color: 'white', type: 'bishop', x: 2, y: 0 },
+  //       { color: 'white', type: 'bishop', x: 6, y: 1 },
+  //       { color: 'white', type: 'king', x: 4, y: 0 },
+  //       { color: 'white', type: 'rook', x: 7, y: 0 },
+  //       { color: 'black', type: 'bishop', x: 0, y: 4 },
+  //       { color: 'black', type: 'rook', x: 0, y: 7 },
+  //       { color: 'black', type: 'king', x: 4, y: 7 },
+  //       { color: 'black', type: 'pawn', x: 5, y: 6 },
+  //       { color: 'black', type: 'pawn', x: 0, y: 1 },
+  //     ],
+  //   },
+  // );
+
+  readonly chess = new Chess();
 
   readonly board = new Board(this.chess);
 
@@ -35,6 +37,7 @@ export class ChessGame {
 
   constructor() {
     this.chess.win = this.#win;
+    this.theme.load(); // Load saved theme on startup
   }
 
   readonly theme = new Theme();
