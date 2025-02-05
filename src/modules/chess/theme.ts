@@ -49,8 +49,8 @@ export class RgbColor {
 }
 
 export class Theme {
-  readonly light = new RgbColor(128, 128, 128);
-  readonly dark = new RgbColor(4, 48, 104);
+  readonly light = new RgbColor(171, 194, 194);
+  readonly dark = new RgbColor(21, 85, 111);
 
   readonly #style = reactive({
     '--light': computed(() => this.light.value),
